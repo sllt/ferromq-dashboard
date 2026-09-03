@@ -13,10 +13,13 @@ import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { toastApiError } from '@/lib/api'
 import { endpoints } from '@/lib/endpoints'
+import { useClusterFeatures } from '@/lib/features'
 import type { PublishRequest } from '@/lib/types'
 
 export function PublishPage() {
   const { t } = useTranslation()
+  const features = useClusterFeatures()
+  const canRetain = features.has('retain')
   const [topic, setTopic] = useState('')
   const [topics, setTopics] = useState('')
   const [payload, setPayload] = useState('')
@@ -101,8 +104,16 @@ export function PublishPage() {
                 <Input className="font-mono" value={responseTopic} onChange={(e) => setResponseTopic(e.target.value)} />
               </Field>
               <div className="flex items-center gap-3 pt-6">
-                <Switch checked={retain} onCheckedChange={setRetain} id="retain" />
-                <Label htmlFor="retain">{t('publish.retain')}</Label>
+                <Switch
+                  checked={canRetain && retain}
+                  onCheckedChange={setRetain}
+                  id="retain"
+                  disabled={!canRetain}
+                />
+                <Label htmlFor="retain" className={!canRetain ? 'text-muted-foreground' : undefined}>
+                  {t('publish.retain')}
+                  {!canRetain ? <span className="ml-2 text-xs">({t('features.disabled')})</span> : null}
+                </Label>
               </div>
             </div>
             <Field label={t('publish.payload')}>

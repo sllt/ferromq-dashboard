@@ -3,18 +3,27 @@ import type { ColumnDef } from '@tanstack/react-table'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DataTable } from '@/components/data-table'
+import { ListMeta } from '@/components/list-meta'
 import { PageHeader } from '@/components/page-header'
 import { ErrorState, TableSkeleton } from '@/components/query-state'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { endpoints } from '@/lib/endpoints'
+import { useClusterFeatures } from '@/lib/features'
+import { DEFAULT_PAGE_SIZE, pagingParams, type ListQuery } from '@/lib/list'
 import type { SubscriptionInfo } from '@/lib/types'
 
 export function SubscriptionsPage() {
   const { t } = useTranslation()
-  const [draft, setDraft] = useState({ clientid: '', topic: '', qos: '', share: '', _match_topic: '', _limit: '1000' })
-  const [query, setQuery] = useState<Record<string, unknown>>({ _limit: 1000 })
+  const features = useClusterFeatures()
+  const shared = features.has('shared_subscription')
+  const [draft, setDraft] = useState({ clientid: '', topic: '', qos: '', share: '', _match_topic: '' })
+  const [filters, setFilters] = useState<ListQuery>({})
+  const [offset, setOffset] = useState(0)
+  const [limit, setLimit] = useState(DEFAULT_PAGE_SIZE)
+
+  const query: ListQuery = { ...filters, ...pagingParams(offset, limit) }
 
   const listQ = useQuery({
     queryKey: ['subscriptions', query],
@@ -26,11 +35,11 @@ export function SubscriptionsPage() {
       { accessorKey: 'clientid', header: t('common.client') },
       { accessorKey: 'topic', header: t('common.topic') },
       { accessorKey: 'qos', header: t('common.qos') },
-      { accessorKey: 'share', header: t('subs.share') },
+      ...(shared ? [{ accessorKey: 'share', header: t('subs.share') } satisfies ColumnDef<SubscriptionInfo>] : []),
       { accessorKey: 'client_addr', header: t('subs.addr') },
       { accessorKey: 'node_id', header: t('common.node') },
     ],
-    [t],
+    [t, shared],
   )
 
   return (
@@ -57,22 +66,24 @@ export function SubscriptionsPage() {
         <Field label={t('common.qos')}>
           <Input value={draft.qos} onChange={(e) => setDraft({ ...draft, qos: e.target.value })} />
         </Field>
-        <Field label={t('subs.share')}>
-          <Input value={draft.share} onChange={(e) => setDraft({ ...draft, share: e.target.value })} />
-        </Field>
+        {shared ? (
+          <Field label={t('subs.share')}>
+            <Input value={draft.share} onChange={(e) => setDraft({ ...draft, share: e.target.value })} />
+          </Field>
+        ) : null}
         <div className="flex items-end gap-2">
           <Button
             size="sm"
-            onClick={() =>
-              setQuery({
-                _limit: Number(draft._limit) || 1000,
+            onClick={() => {
+              setFilters({
                 clientid: draft.clientid || undefined,
                 topic: draft.topic || undefined,
                 qos: draft.qos === '' ? undefined : Number(draft.qos),
-                share: draft.share || undefined,
+                share: shared ? draft.share || undefined : undefined,
                 _match_topic: draft._match_topic || undefined,
               })
-            }
+              setOffset(0)
+            }}
           >
             {t('common.apply')}
           </Button>
@@ -80,8 +91,10 @@ export function SubscriptionsPage() {
             size="sm"
             variant="outline"
             onClick={() => {
-              setDraft({ clientid: '', topic: '', qos: '', share: '', _match_topic: '', _limit: '1000' })
-              setQuery({ _limit: 1000 })
+              setDraft({ clientid: '', topic: '', qos: '', share: '', _match_topic: '' })
+              setFilters({})
+              setOffset(0)
+              setLimit(DEFAULT_PAGE_SIZE)
             }}
           >
             {t('common.reset')}
@@ -93,7 +106,24 @@ export function SubscriptionsPage() {
       ) : listQ.error ? (
         <ErrorState error={listQ.error} onRetry={() => void listQ.refetch()} />
       ) : (
-        <DataTable columns={columns} data={listQ.data ?? []} searchKey="topic" />
+        <DataTable
+          columns={columns}
+          data={listQ.data?.items ?? []}
+          searchKey="topic"
+          hidePagination
+          footer={
+            listQ.data ? (
+              <ListMeta
+                page={listQ.data}
+                onOffsetChange={setOffset}
+                onLimitChange={(n) => {
+                  setLimit(n)
+                  setOffset(0)
+                }}
+              />
+            ) : null
+          }
+        />
       )}
     </div>
   )

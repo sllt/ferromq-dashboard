@@ -2,7 +2,7 @@ import { AlertCircle, Inbox } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { getErrorMessage } from '@/lib/api'
+import { getErrorMessage, getErrorTitle } from '@/lib/api'
 
 export function PageSkeleton({ cards = 4, rows = 8 }: { cards?: number; rows?: number }) {
   return (
@@ -49,8 +49,8 @@ export function ErrorState({ error, onRetry }: { error: unknown; onRetry?: () =>
   return (
     <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-destructive/30 bg-destructive/5 py-14 text-center">
       <AlertCircle className="size-8 text-destructive" />
-      <div className="text-sm font-medium">{t('common.error')}</div>
-      <p className="max-w-lg px-4 font-mono text-xs text-muted-foreground">{getErrorMessage(error)}</p>
+      <div className="text-sm font-medium">{getErrorTitle(error)}</div>
+      <p className="max-w-lg px-4 text-xs text-muted-foreground">{getErrorMessage(error)}</p>
       {onRetry ? (
         <Button size="sm" variant="outline" onClick={onRetry}>
           {t('common.retry')}

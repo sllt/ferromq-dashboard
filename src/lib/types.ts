@@ -6,6 +6,7 @@ export type ApiEndpoint = {
 }
 
 export type BrokerInfo = {
+  ok?: boolean
   datetime?: string
   node_id: number
   node_name: string
@@ -17,6 +18,7 @@ export type BrokerInfo = {
 }
 
 export type NodeInfo = {
+  ok?: boolean
   boottime?: string
   connections?: number
   disk_free?: number
@@ -46,9 +48,14 @@ export type FeatureFlags = {
 
 export type FeatureNode = {
   node_id: number
-  node_name: string
-  features: FeatureFlags
+  node_name?: string
+  ok?: boolean
+  features?: FeatureFlags
+  error?: string
 }
+
+/** P2 `{ ok, error? }` or P1 bare error string. */
+export type FeatureNodeOrError = FeatureNode | string
 
 export type FeatureConflict = {
   feature: string
@@ -58,8 +65,12 @@ export type FeatureConflict = {
 export type FeaturesResponse = {
   consistent: boolean
   node_count: number
+  failed_count?: number
+  partial?: boolean
+  /** OR of flags across reachable nodes — preferred for menu gating. */
+  enabled?: FeatureFlags
   conflicts: FeatureConflict[]
-  nodes: FeatureNode[]
+  nodes: FeatureNodeOrError[]
 }
 
 export type NodeHealth = {
@@ -122,6 +133,9 @@ export type ClientInfo = {
 
 export type ClientQuery = {
   _limit?: number
+  limit?: number
+  offset?: number
+  _offset?: number
   clientid?: string
   username?: string
   ip_address?: string
@@ -177,6 +191,7 @@ export type RetainItem = {
   from?: RetainFrom
   publish?: RetainPublish
   remaining_ttl?: number | null
+  client_id?: string
 }
 
 export type RetainsResponse = {
@@ -216,8 +231,10 @@ export type PluginInfo = {
 }
 
 export type NodePlugins = {
+  ok?: boolean
   node: number
   plugins: PluginInfo[]
+  error?: string
 }
 
 export type StatsNode = {
@@ -277,3 +294,5 @@ export type HistoryQuery = {
   limit?: number
   merge_window?: number
 }
+
+export type { PageResult } from '@/lib/list'

@@ -10,8 +10,9 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { toastApiError } from '@/lib/api'
+import { partitionCluster } from '@/lib/cluster'
 import { endpoints } from '@/lib/endpoints'
-import type { PluginInfo } from '@/lib/types'
+import type { NodePlugins, PluginInfo } from '@/lib/types'
 
 type Row = PluginInfo & { node: number }
 
@@ -21,6 +22,8 @@ export function PluginsPage() {
   const [config, setConfig] = useState<{ node: number; name: string; json: unknown } | null>(null)
 
   const listQ = useQuery({ queryKey: ['plugins'], queryFn: endpoints.plugins })
+  const clustered = partitionCluster<NodePlugins>(listQ.data?.items)
+  const cluster = clustered.ok
 
   const invalidate = async () => {
     await qc.invalidateQueries({ queryKey: ['plugins'] })
@@ -51,7 +54,7 @@ export function PluginsPage() {
     onError: toastApiError,
   })
 
-  const rows: Row[] = (listQ.data ?? []).flatMap((n) => n.plugins.map((p) => ({ ...p, node: n.node })))
+  const rows: Row[] = cluster.flatMap((n) => (n.plugins ?? []).map((p) => ({ ...p, node: n.node })))
 
   const columns = useMemo<ColumnDef<Row>[]>(
     () => [
@@ -149,12 +152,31 @@ export function PluginsPage() {
         }
       />
       <p className="mb-3 text-xs text-muted-foreground">{t('plugins.immutableHint')}</p>
+      {clustered.errors.length > 0 ? (
+        <div className="mb-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-800 dark:text-amber-300">
+          {clustered.errors.map((e) => (
+            <div key={e.key}>{t('cluster.nodeFailed', { node: e.key, error: e.error })}</div>
+          ))}
+        </div>
+      ) : null}
       {listQ.isLoading ? (
         <TableSkeleton />
       ) : listQ.error ? (
         <ErrorState error={listQ.error} onRetry={() => void listQ.refetch()} />
       ) : (
-        <DataTable columns={columns} data={rows} searchKey="name" />
+        <DataTable
+          columns={columns}
+          data={rows}
+          searchKey="name"
+          footer={
+            listQ.data ? (
+              <p className="text-xs text-muted-foreground">
+                {t('list.clusterRows', { count: listQ.data.rowCount })}
+                {listQ.data.truncated ? ` · ${t('list.truncatedShort')}` : ''}
+              </p>
+            ) : null
+          }
+        />
       )}
 
       <Dialog open={!!config} onOpenChange={(o) => !o && setConfig(null)}>

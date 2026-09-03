@@ -73,6 +73,33 @@
     "historyUnavailable": "当前 Broker 未启用历史存储。",
     "optional": "可选"
   },
+  "errors": {
+    "generic": "请求失败",
+    "badRequest": "请求无效",
+    "unauthorized": "未授权，请重新连接",
+    "forbidden": "没有权限执行该操作",
+    "notFound": "资源不存在",
+    "conflict": "操作冲突",
+    "unavailable": "服务暂时不可用",
+    "requestId": "请求 ID"
+  },
+  "list": {
+    "showing": "第 {{from}}–{{to}} 条 / 共 {{total}} 条",
+    "perPage": "{{count}} 条/页",
+    "truncated": "结果被截断（本页 {{count}} 条）。后端通过 X-Truncated / format=page 标记还有更多数据。",
+    "truncatedShort": "已截断",
+    "clusterRows": "集群返回 {{count}} 条"
+  },
+  "features": {
+    "disabled": "当前集群未启用",
+    "unavailableTitle": "功能不可用",
+    "unavailableHint": "集群未启用「{{feature}}」。侧栏对应入口已禁用。",
+    "sessionStorageHint": "未启用会话存储时，离线客户端列表可能为空。"
+  },
+  "cluster": {
+    "partial": "{{count}} 个节点不可达，结果可能不完整。",
+    "nodeFailed": "节点 {{node}}：{{error}}"
+  },
   "theme": {
     "light": "浅色",
     "dark": "深色",

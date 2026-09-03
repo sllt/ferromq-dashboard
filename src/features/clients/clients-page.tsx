@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { DataTable } from '@/components/data-table'
+import { ListMeta } from '@/components/list-meta'
 import { PageHeader } from '@/components/page-header'
 import { ErrorState, TableSkeleton } from '@/components/query-state'
 import { Badge } from '@/components/ui/badge'
@@ -24,16 +25,26 @@ import {
 } from '@/components/ui/alert-dialog'
 import { toastApiError } from '@/lib/api'
 import { endpoints } from '@/lib/endpoints'
+import { useClusterFeatures } from '@/lib/features'
+import { DEFAULT_PAGE_SIZE, pagingParams } from '@/lib/list'
 import type { ClientInfo, ClientQuery } from '@/lib/types'
+
+type Filters = Omit<ClientQuery, '_limit' | 'limit' | 'offset' | '_offset'>
 
 export function ClientsPage() {
   const { t } = useTranslation()
   const qc = useQueryClient()
+  const features = useClusterFeatures()
+  const sessionStore = features.has('session_storage')
   const [tab, setTab] = useState<'all' | 'offline'>('all')
-  const [draft, setDraft] = useState<ClientQuery>({ _limit: 1000 })
-  const [query, setQuery] = useState<ClientQuery>({ _limit: 1000 })
+  const [draft, setDraft] = useState<Filters>({})
+  const [filters, setFilters] = useState<Filters>({})
+  const [offset, setOffset] = useState(0)
+  const [limit, setLimit] = useState(DEFAULT_PAGE_SIZE)
   const [kickId, setKickId] = useState<string | null>(null)
   const [kickOff, setKickOff] = useState(false)
+
+  const query: ClientQuery = { ...filters, ...pagingParams(offset, limit) }
 
   const listQ = useQuery({
     queryKey: ['clients', tab, query],
@@ -50,7 +61,7 @@ export function ClientsPage() {
   })
 
   const kickOffMut = useMutation({
-    mutationFn: () => endpoints.kickOfflines(query),
+    mutationFn: () => endpoints.kickOfflines(filters),
     onSuccess: async (res) => {
       toast.success(t('clients.kickedCount', { count: res.count }))
       await qc.invalidateQueries({ queryKey: ['clients'] })
@@ -102,6 +113,11 @@ export function ClientsPage() {
     [t],
   )
 
+  function applyFilters() {
+    setFilters(draft)
+    setOffset(0)
+  }
+
   return (
     <div>
       <PageHeader
@@ -113,7 +129,7 @@ export function ClientsPage() {
               {t('common.refresh')}
             </Button>
             {tab === 'offline' ? (
-              <Button size="sm" variant="destructive" onClick={() => setKickOff(true)}>
+              <Button size="sm" variant="destructive" onClick={() => setKickOff(true)} disabled={!sessionStore}>
                 {t('clients.kickOfflines')}
               </Button>
             ) : null}
@@ -121,12 +137,25 @@ export function ClientsPage() {
         }
       />
 
-      <Tabs value={tab} onValueChange={(v) => setTab(v as 'all' | 'offline')} className="mb-4">
+      <Tabs
+        value={tab}
+        onValueChange={(v) => {
+          setTab(v as 'all' | 'offline')
+          setOffset(0)
+        }}
+        className="mb-4"
+      >
         <TabsList>
           <TabsTrigger value="all">{t('clients.tabAll')}</TabsTrigger>
-          <TabsTrigger value="offline">{t('clients.tabOffline')}</TabsTrigger>
+          <TabsTrigger value="offline" disabled={!sessionStore} title={!sessionStore ? t('features.sessionStorageHint') : undefined}>
+            {t('clients.tabOffline')}
+          </TabsTrigger>
         </TabsList>
       </Tabs>
+
+      {!sessionStore && tab === 'offline' ? (
+        <p className="mb-3 text-xs text-amber-700 dark:text-amber-300">{t('features.sessionStorageHint')}</p>
+      ) : null}
 
       <div className="mb-4 grid gap-3 rounded-xl border bg-card p-4 sm:grid-cols-2 lg:grid-cols-4">
         <Field label={t('clients.likeId')}>
@@ -142,23 +171,17 @@ export function ClientsPage() {
           <Input value={draft.clientid ?? ''} onChange={(e) => setDraft({ ...draft, clientid: e.target.value })} />
         </Field>
         <div className="flex items-end gap-2 sm:col-span-2">
-          <Button
-            size="sm"
-            onClick={() =>
-              setQuery({
-                ...draft,
-                _limit: draft._limit ?? 1000,
-              })
-            }
-          >
+          <Button size="sm" onClick={applyFilters}>
             {t('common.apply')}
           </Button>
           <Button
             size="sm"
             variant="outline"
             onClick={() => {
-              setDraft({ _limit: 1000 })
-              setQuery({ _limit: 1000 })
+              setDraft({})
+              setFilters({})
+              setOffset(0)
+              setLimit(DEFAULT_PAGE_SIZE)
             }}
           >
             {t('common.reset')}
@@ -171,7 +194,24 @@ export function ClientsPage() {
       ) : listQ.error ? (
         <ErrorState error={listQ.error} onRetry={() => void listQ.refetch()} />
       ) : (
-        <DataTable columns={columns} data={listQ.data ?? []} searchKey="clientid" />
+        <DataTable
+          columns={columns}
+          data={listQ.data?.items ?? []}
+          searchKey="clientid"
+          hidePagination
+          footer={
+            listQ.data ? (
+              <ListMeta
+                page={listQ.data}
+                onOffsetChange={setOffset}
+                onLimitChange={(n) => {
+                  setLimit(n)
+                  setOffset(0)
+                }}
+              />
+            ) : null
+          }
+        />
       )}
 
       <AlertDialog open={!!kickId} onOpenChange={(o) => !o && setKickId(null)}>

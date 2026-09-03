@@ -1,4 +1,6 @@
 import { apiDelete, apiGet, apiPost, apiPut } from '@/lib/api'
+import { partitionCluster } from '@/lib/cluster'
+import { apiGetList, type ListQuery } from '@/lib/list'
 import type {
   ApiEndpoint,
   BrokerInfo,
@@ -17,41 +19,45 @@ import type {
   NodeStats,
   PluginInfo,
   PublishRequest,
-  RetainsResponse,
   RouteInfo,
   StatsSum,
   SubscriptionInfo,
+  RetainItem,
 } from '@/lib/types'
 
 export const endpoints = {
   listApis: () => apiGet<ApiEndpoint[]>('/'),
-  brokers: async (node?: number) =>
-    asArray(await (node == null ? apiGet<BrokerInfo[] | BrokerInfo>('/brokers') : apiGet<BrokerInfo>(`/brokers/${node}`))),
-  nodes: async (node?: number) =>
-    asArray(await (node == null ? apiGet<NodeInfo[] | NodeInfo>('/nodes') : apiGet<NodeInfo>(`/nodes/${node}`))),
+  openapi: () => apiGet<Record<string, unknown>>('/openapi.json'),
+  brokers: async (node?: number) => {
+    if (node != null) return { ok: [await apiGet<BrokerInfo>(`/brokers/${node}`)], errors: [] }
+    return partitionCluster<BrokerInfo>(await apiGet<BrokerInfo[] | BrokerInfo>('/brokers'))
+  },
+  nodes: async (node?: number) => {
+    if (node != null) return { ok: [await apiGet<NodeInfo>(`/nodes/${node}`)], errors: [] }
+    return partitionCluster<NodeInfo>(await apiGet<NodeInfo[] | NodeInfo>('/nodes'))
+  },
   features: () => apiGet<FeaturesResponse>('/features'),
   featuresNode: (node: number) => apiGet<FeatureNode>(`/features/${node}`),
   health: () => apiGet<HealthCheck>('/health/check'),
   healthNode: (node: number) => apiGet<NodeHealth>(`/health/check/${node}`),
 
-  clients: (query?: ClientQuery) => apiGet<ClientInfo[]>('/clients', query),
-  offlines: (query?: ClientQuery) => apiGet<ClientInfo[]>('/clients/offlines', query),
+  clients: (query?: ClientQuery) => apiGetList<ClientInfo>('/clients', query),
+  offlines: (query?: ClientQuery) => apiGetList<ClientInfo>('/clients/offlines', query),
   client: (clientid: string) => apiGet<ClientInfo>(`/clients/${encodeURIComponent(clientid)}`),
   kickClient: (clientid: string) => apiDelete<string>(`/clients/${encodeURIComponent(clientid)}`),
   kickOfflines: (query?: ClientQuery) => apiDelete<{ count: number }>('/clients/offlines', query),
   clientOnline: (clientid: string) =>
     apiGet<boolean>(`/clients/${encodeURIComponent(clientid)}/online`),
 
-  subscriptions: (query?: Record<string, unknown>) =>
-    apiGet<SubscriptionInfo[]>('/subscriptions', query),
+  subscriptions: (query?: ListQuery) => apiGetList<SubscriptionInfo>('/subscriptions', query),
   clientSubscriptions: (clientid: string) =>
-    apiGet<SubscriptionInfo[]>(`/subscriptions/${encodeURIComponent(clientid)}`),
+    apiGetList<SubscriptionInfo>(`/subscriptions/${encodeURIComponent(clientid)}`),
 
-  routes: (limit?: number) => apiGet<RouteInfo[]>('/routes', { _limit: limit }),
-  route: (topic: string) => apiGet<RouteInfo[]>(`/routes/${encodeURIComponent(topic)}`),
+  routes: (query?: ListQuery) => apiGetList<RouteInfo>('/routes', query),
+  route: (topic: string) => apiGetList<RouteInfo>(`/routes/${encodeURIComponent(topic)}`),
 
-  retains: (query?: { topic_filter?: string; offset?: number; limit?: number }) =>
-    apiGet<RetainsResponse>('/retains', query),
+  retains: (query?: { topic_filter?: string; offset?: number; limit?: number; _limit?: number }) =>
+    apiGetList<RetainItem>('/retains', query),
   deleteRetain: (topic: string) => apiDelete<unknown>('/retains', { topic }),
 
   publish: (body: PublishRequest) => apiPost<string>('/mqtt/publish', body),
@@ -60,7 +66,7 @@ export const endpoints = {
   unsubscribe: (body: { topic: string; clientid: string }) =>
     apiPost<unknown>('/mqtt/unsubscribe', body),
 
-  plugins: () => apiGet<NodePlugins[]>('/plugins'),
+  plugins: () => apiGetList<NodePlugins>('/plugins'),
   nodePlugins: (node: number) => apiGet<PluginInfo[]>(`/plugins/${node}`),
   plugin: (node: number, name: string) =>
     apiGet<PluginInfo>(`/plugins/${node}/${encodeURIComponent(name)}`),
