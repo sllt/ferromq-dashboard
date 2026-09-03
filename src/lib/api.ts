@@ -1,17 +1,38 @@
-import axios, { AxiosError } from 'axios'
+import axios, { AxiosError, type AxiosResponse } from 'axios'
 import { toast } from 'sonner'
+import i18n from '@/lib/i18n'
 import { clearAuthSession, getAuthToken } from '@/lib/auth-store'
 import { compactParams } from '@/lib/utils'
 
+export type ApiErrorBody = {
+  code?: number | string
+  message?: string
+  details?: unknown
+  request_id?: string
+}
+
 export class ApiError extends Error {
   status: number
+  code?: number | string
+  details?: unknown
+  requestId?: string
   body: string
 
-  constructor(status: number, body: string) {
-    super(body || `HTTP ${status}`)
+  constructor(init: {
+    status: number
+    message: string
+    code?: number | string
+    details?: unknown
+    requestId?: string
+    body?: string
+  }) {
+    super(init.message)
     this.name = 'ApiError'
-    this.status = status
-    this.body = body
+    this.status = init.status
+    this.code = init.code
+    this.details = init.details
+    this.requestId = init.requestId
+    this.body = init.body ?? init.message
   }
 }
 
@@ -35,33 +56,85 @@ api.interceptors.response.use((response) => {
     if (!window.location.hash.includes('/login')) {
       window.location.hash = '#/login'
     }
-    throw new ApiError(401, 'Unauthorized')
+    throw toApiError(response)
   }
 
   if (response.status >= 400) {
-    const data = response.data
-    const body =
-      typeof data === 'string'
-        ? data
-        : data && typeof data === 'object'
-          ? JSON.stringify(data)
-          : `HTTP ${response.status}`
-    throw new ApiError(response.status, body.slice(0, 400))
+    throw toApiError(response)
   }
 
   return response
 })
 
+export function parseErrorBody(data: unknown): ApiErrorBody | null {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return null
+  const rec = data as Record<string, unknown>
+  const message = typeof rec.message === 'string' ? rec.message : undefined
+  const code = typeof rec.code === 'number' || typeof rec.code === 'string' ? rec.code : undefined
+  const requestId = typeof rec.request_id === 'string' ? rec.request_id : undefined
+  if (message == null && code == null && requestId == null && rec.details === undefined) return null
+  return { code, message, details: rec.details, request_id: requestId }
+}
+
+function toApiError(response: AxiosResponse): ApiError {
+  const parsed = parseErrorBody(response.data)
+  const fallback =
+    typeof response.data === 'string' && response.data.trim()
+      ? response.data.trim().slice(0, 400)
+      : `HTTP ${response.status}`
+  const message = parsed?.message?.trim() || fallback
+  return new ApiError({
+    status: response.status,
+    message,
+    code: parsed?.code ?? response.status,
+    details: parsed?.details,
+    requestId: parsed?.request_id,
+    body: message,
+  })
+}
+
+function statusKey(status: number): string {
+  if (status === 400) return 'errors.badRequest'
+  if (status === 401) return 'errors.unauthorized'
+  if (status === 403) return 'errors.forbidden'
+  if (status === 404) return 'errors.notFound'
+  if (status === 409) return 'errors.conflict'
+  if (status === 503 || status === 502) return 'errors.unavailable'
+  return 'errors.generic'
+}
+
 export function getErrorMessage(error: unknown): string {
-  if (error instanceof ApiError) return error.body || error.message
+  if (error instanceof ApiError) {
+    const mapped = i18n.t(statusKey(error.status), { defaultValue: '' })
+    const base = error.message && error.message !== `HTTP ${error.status}` ? error.message : mapped || error.message
+    if (error.requestId) {
+      return `${base} (${i18n.t('errors.requestId')}: ${error.requestId})`
+    }
+    return base
+  }
   if (error instanceof AxiosError) return error.message
   if (error instanceof Error) return error.message
   return String(error)
 }
 
+export function getErrorTitle(error: unknown): string {
+  if (error instanceof ApiError) {
+    const title = i18n.t(statusKey(error.status))
+    return title || i18n.t('common.error')
+  }
+  return i18n.t('common.error')
+}
+
 export async function apiGet<T>(path: string, params?: Record<string, unknown>): Promise<T> {
   const res = await api.get<T>(path, { params: compactParams(params) })
   return res.data
+}
+
+export async function apiGetResponse<T>(
+  path: string,
+  params?: Record<string, unknown>,
+): Promise<AxiosResponse<T>> {
+  return api.get<T>(path, { params: compactParams(params) })
 }
 
 export async function apiPost<T>(path: string, body?: unknown): Promise<T> {

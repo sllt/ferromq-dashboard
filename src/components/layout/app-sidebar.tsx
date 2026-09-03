@@ -15,11 +15,14 @@ import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { useClusterFeatures, type FeatureKey } from '@/lib/features'
 
 type NavItem = {
   to: string
   labelKey: string
   icon: React.ComponentType<{ className?: string }>
+  feature?: FeatureKey
 }
 
 type NavGroup = {
@@ -41,7 +44,7 @@ const groups: NavGroup[] = [
       { to: '/clients', labelKey: 'nav.clients', icon: Users },
       { to: '/subscriptions', labelKey: 'nav.subscriptions', icon: Radio },
       { to: '/routes', labelKey: 'nav.routes', icon: RouteIcon },
-      { to: '/retains', labelKey: 'nav.retains', icon: Layers },
+      { to: '/retains', labelKey: 'nav.retains', icon: Layers, feature: 'retain' },
       { to: '/publish', labelKey: 'nav.publish', icon: Send },
     ],
   },
@@ -54,6 +57,7 @@ const groups: NavGroup[] = [
 export function AppSidebar({ collapsed }: { collapsed: boolean }) {
   const { t } = useTranslation()
   const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const features = useClusterFeatures()
 
   return (
     <aside
@@ -87,6 +91,28 @@ export function AppSidebar({ collapsed }: { collapsed: boolean }) {
                 {group.items.map((item) => {
                   const active = item.to === '/' ? pathname === '/' : pathname.startsWith(item.to)
                   const Icon = item.icon
+                  const gated = item.feature && !features.isLoading && !features.isError && !features.has(item.feature)
+                  if (gated) {
+                    const label = (
+                      <span
+                        className={cn(
+                          'flex cursor-not-allowed items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm opacity-45',
+                          collapsed && 'justify-center px-0',
+                        )}
+                      >
+                        <Icon className="size-4 shrink-0" />
+                        {!collapsed ? <span>{t(item.labelKey)}</span> : null}
+                      </span>
+                    )
+                    return (
+                      <Tooltip key={item.to}>
+                        <TooltipTrigger asChild>{label}</TooltipTrigger>
+                        <TooltipContent>
+                          {t('features.unavailableHint', { feature: t(`nodes.${item.feature}`) })}
+                        </TooltipContent>
+                      </Tooltip>
+                    )
+                  }
                   return (
                     <Link
                       key={item.to}

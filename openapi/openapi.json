@@ -1,0 +1,1085 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FerroMQ HTTP API",
+    "version": "0.1.0",
+    "description": "Vendored stub of /api/v1 for dashboard codegen. Refresh from a live broker with `pnpm gen:api:live` (curl localhost:6060/api/v1/openapi.json)."
+  },
+  "servers": [{ "url": "/api/v1" }],
+  "security": [{ "bearerAuth": [] }],
+  "tags": [
+    { "name": "meta" },
+    { "name": "cluster" },
+    { "name": "clients" },
+    { "name": "subscriptions" },
+    { "name": "routes" },
+    { "name": "retains" },
+    { "name": "mqtt" },
+    { "name": "plugins" },
+    { "name": "stats" },
+    { "name": "metrics" }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "tags": ["meta"],
+        "operationId": "listApis",
+        "summary": "List available API endpoints",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Endpoint catalog",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/ApiEndpoint" } } } }
+          },
+          "401": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/openapi.json": {
+      "get": {
+        "tags": ["meta"],
+        "operationId": "getOpenApi",
+        "summary": "OpenAPI document (P2+)",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "OpenAPI 3 document",
+            "content": { "application/json": { "schema": { "type": "object", "additionalProperties": true } } }
+          },
+          "404": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/brokers": {
+      "get": {
+        "tags": ["cluster"],
+        "operationId": "listBrokers",
+        "responses": {
+          "200": { "description": "Brokers", "content": { "application/json": { "schema": { "oneOf": [{ "type": "array", "items": { "$ref": "#/components/schemas/BrokerInfo" } }, { "$ref": "#/components/schemas/BrokerInfo" }] } } } },
+          "401": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/brokers/{id}": {
+      "get": {
+        "tags": ["cluster"],
+        "operationId": "getBroker",
+        "parameters": [{ "$ref": "#/components/parameters/NodeId" }],
+        "responses": {
+          "200": { "description": "Broker", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/BrokerInfo" } } } },
+          "404": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/nodes": {
+      "get": {
+        "tags": ["cluster"],
+        "operationId": "listNodes",
+        "responses": {
+          "200": { "description": "Nodes", "content": { "application/json": { "schema": { "oneOf": [{ "type": "array", "items": { "$ref": "#/components/schemas/NodeInfo" } }, { "$ref": "#/components/schemas/NodeInfo" }] } } } },
+          "401": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/nodes/{id}": {
+      "get": {
+        "tags": ["cluster"],
+        "operationId": "getNode",
+        "parameters": [{ "$ref": "#/components/parameters/NodeId" }],
+        "responses": {
+          "200": { "description": "Node", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NodeInfo" } } } },
+          "404": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/features": {
+      "get": {
+        "tags": ["cluster"],
+        "operationId": "getFeatures",
+        "responses": {
+          "200": { "description": "Cluster feature summary", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/FeaturesResponse" } } } },
+          "401": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/features/{id}": {
+      "get": {
+        "tags": ["cluster"],
+        "operationId": "getFeaturesNode",
+        "parameters": [{ "$ref": "#/components/parameters/NodeId" }],
+        "responses": {
+          "200": { "description": "Node features", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/FeatureNode" } } } },
+          "404": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/health/check": {
+      "get": {
+        "tags": ["cluster"],
+        "operationId": "healthCheck",
+        "security": [],
+        "responses": {
+          "200": { "description": "Cluster health", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HealthCheck" } } } }
+        }
+      }
+    },
+    "/health/check/{id}": {
+      "get": {
+        "tags": ["cluster"],
+        "operationId": "healthCheckNode",
+        "security": [],
+        "parameters": [{ "$ref": "#/components/parameters/NodeId" }],
+        "responses": {
+          "200": { "description": "Node health", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NodeHealth" } } } },
+          "404": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/clients": {
+      "get": {
+        "tags": ["clients"],
+        "operationId": "listClients",
+        "parameters": [
+          { "$ref": "#/components/parameters/Limit" },
+          { "$ref": "#/components/parameters/LimitAlias" },
+          { "$ref": "#/components/parameters/Offset" },
+          { "$ref": "#/components/parameters/OffsetAlias" },
+          { "$ref": "#/components/parameters/Format" },
+          { "name": "clientid", "in": "query", "schema": { "type": "string" } },
+          { "name": "username", "in": "query", "schema": { "type": "string" } },
+          { "name": "ip_address", "in": "query", "schema": { "type": "string" } },
+          { "name": "connected", "in": "query", "schema": { "type": "boolean" } },
+          { "name": "clean_start", "in": "query", "schema": { "type": "boolean" } },
+          { "name": "session_present", "in": "query", "schema": { "type": "boolean" } },
+          { "name": "proto_ver", "in": "query", "schema": { "type": "integer" } },
+          { "name": "_like_clientid", "in": "query", "schema": { "type": "string" } },
+          { "name": "_like_username", "in": "query", "schema": { "type": "string" } },
+          { "name": "_gte_created_at", "in": "query", "schema": { "type": "string" } },
+          { "name": "_lte_created_at", "in": "query", "schema": { "type": "string" } },
+          { "name": "_gte_connected_at", "in": "query", "schema": { "type": "string" } },
+          { "name": "_lte_connected_at", "in": "query", "schema": { "type": "string" } },
+          { "name": "_gte_mqueue_len", "in": "query", "schema": { "type": "integer" } },
+          { "name": "_lte_mqueue_len", "in": "query", "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "$ref": "#/components/responses/ClientList" },
+          "400": { "$ref": "#/components/responses/Error" },
+          "401": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/clients/offlines": {
+      "get": {
+        "tags": ["clients"],
+        "operationId": "listOfflines",
+        "parameters": [
+          { "$ref": "#/components/parameters/Limit" },
+          { "$ref": "#/components/parameters/LimitAlias" },
+          { "$ref": "#/components/parameters/Offset" },
+          { "$ref": "#/components/parameters/OffsetAlias" },
+          { "$ref": "#/components/parameters/Format" },
+          { "name": "clientid", "in": "query", "schema": { "type": "string" } },
+          { "name": "username", "in": "query", "schema": { "type": "string" } },
+          { "name": "_like_clientid", "in": "query", "schema": { "type": "string" } },
+          { "name": "_like_username", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "$ref": "#/components/responses/ClientList" },
+          "401": { "$ref": "#/components/responses/Error" }
+        }
+      },
+      "delete": {
+        "tags": ["clients"],
+        "operationId": "kickOfflines",
+        "parameters": [
+          { "name": "clientid", "in": "query", "schema": { "type": "string" } },
+          { "name": "username", "in": "query", "schema": { "type": "string" } },
+          { "name": "_like_clientid", "in": "query", "schema": { "type": "string" } },
+          { "name": "_like_username", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Kicked count", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/KickCount" } } } },
+          "401": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/clients/{clientid}": {
+      "get": {
+        "tags": ["clients"],
+        "operationId": "getClient",
+        "parameters": [{ "$ref": "#/components/parameters/ClientId" }],
+        "responses": {
+          "200": { "description": "Client", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ClientInfo" } } } },
+          "404": { "$ref": "#/components/responses/Error" }
+        }
+      },
+      "delete": {
+        "tags": ["clients"],
+        "operationId": "kickClient",
+        "parameters": [{ "$ref": "#/components/parameters/ClientId" }],
+        "responses": {
+          "200": { "description": "Kicked", "content": { "application/json": { "schema": { "type": "string" } } } },
+          "404": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/clients/{clientid}/online": {
+      "get": {
+        "tags": ["clients"],
+        "operationId": "clientOnline",
+        "parameters": [{ "$ref": "#/components/parameters/ClientId" }],
+        "responses": {
+          "200": { "description": "Online flag", "content": { "application/json": { "schema": { "type": "boolean" } } } },
+          "404": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/subscriptions": {
+      "get": {
+        "tags": ["subscriptions"],
+        "operationId": "listSubscriptions",
+        "parameters": [
+          { "$ref": "#/components/parameters/Limit" },
+          { "$ref": "#/components/parameters/LimitAlias" },
+          { "$ref": "#/components/parameters/Offset" },
+          { "$ref": "#/components/parameters/OffsetAlias" },
+          { "$ref": "#/components/parameters/Format" },
+          { "name": "clientid", "in": "query", "schema": { "type": "string" } },
+          { "name": "topic", "in": "query", "schema": { "type": "string" } },
+          { "name": "qos", "in": "query", "schema": { "type": "integer" } },
+          { "name": "share", "in": "query", "schema": { "type": "string" } },
+          { "name": "_match_topic", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "$ref": "#/components/responses/SubscriptionList" },
+          "401": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/subscriptions/{clientid}": {
+      "get": {
+        "tags": ["subscriptions"],
+        "operationId": "listClientSubscriptions",
+        "parameters": [
+          { "$ref": "#/components/parameters/ClientId" },
+          { "$ref": "#/components/parameters/Format" }
+        ],
+        "responses": {
+          "200": { "$ref": "#/components/responses/SubscriptionList" },
+          "404": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/routes": {
+      "get": {
+        "tags": ["routes"],
+        "operationId": "listRoutes",
+        "parameters": [
+          { "$ref": "#/components/parameters/Limit" },
+          { "$ref": "#/components/parameters/LimitAlias" },
+          { "$ref": "#/components/parameters/Offset" },
+          { "$ref": "#/components/parameters/OffsetAlias" },
+          { "$ref": "#/components/parameters/Format" }
+        ],
+        "responses": {
+          "200": { "$ref": "#/components/responses/RouteList" },
+          "401": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/routes/{topic}": {
+      "get": {
+        "tags": ["routes"],
+        "operationId": "getRoute",
+        "parameters": [
+          { "name": "topic", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "$ref": "#/components/parameters/Format" }
+        ],
+        "responses": {
+          "200": { "$ref": "#/components/responses/RouteList" },
+          "404": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/retains": {
+      "get": {
+        "tags": ["retains"],
+        "operationId": "listRetains",
+        "parameters": [
+          { "name": "topic_filter", "in": "query", "schema": { "type": "string", "default": "#" } },
+          { "$ref": "#/components/parameters/OffsetAlias" },
+          { "$ref": "#/components/parameters/Offset" },
+          { "$ref": "#/components/parameters/LimitAlias" },
+          { "$ref": "#/components/parameters/Limit" },
+          { "$ref": "#/components/parameters/Format" }
+        ],
+        "responses": {
+          "200": { "$ref": "#/components/responses/RetainList" },
+          "401": { "$ref": "#/components/responses/Error" }
+        }
+      },
+      "delete": {
+        "tags": ["retains"],
+        "operationId": "deleteRetain",
+        "parameters": [{ "name": "topic", "in": "query", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Deleted" },
+          "400": { "$ref": "#/components/responses/Error" },
+          "404": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/mqtt/publish": {
+      "post": {
+        "tags": ["mqtt"],
+        "operationId": "publish",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PublishRequest" } } } },
+        "responses": {
+          "200": { "description": "Published", "content": { "application/json": { "schema": { "type": "string" } } } },
+          "400": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/mqtt/subscribe": {
+      "post": {
+        "tags": ["mqtt"],
+        "operationId": "subscribe",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SubscribeRequest" } } } },
+        "responses": {
+          "200": { "description": "Subscribe result", "content": { "application/json": { "schema": { "type": "object", "additionalProperties": true } } } },
+          "400": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/mqtt/unsubscribe": {
+      "post": {
+        "tags": ["mqtt"],
+        "operationId": "unsubscribe",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UnsubscribeRequest" } } } },
+        "responses": {
+          "200": { "description": "Unsubscribed" },
+          "400": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/plugins": {
+      "get": {
+        "tags": ["plugins"],
+        "operationId": "listPlugins",
+        "parameters": [
+          { "$ref": "#/components/parameters/Limit" },
+          { "$ref": "#/components/parameters/Offset" },
+          { "$ref": "#/components/parameters/Format" }
+        ],
+        "responses": {
+          "200": { "$ref": "#/components/responses/PluginClusterList" },
+          "401": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/plugins/{node}": {
+      "get": {
+        "tags": ["plugins"],
+        "operationId": "listNodePlugins",
+        "parameters": [{ "$ref": "#/components/parameters/NodeIdPath" }],
+        "responses": {
+          "200": { "description": "Plugins", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/PluginInfo" } } } } },
+          "404": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/plugins/{node}/{plugin}": {
+      "get": {
+        "tags": ["plugins"],
+        "operationId": "getPlugin",
+        "parameters": [
+          { "$ref": "#/components/parameters/NodeIdPath" },
+          { "$ref": "#/components/parameters/PluginName" }
+        ],
+        "responses": {
+          "200": { "description": "Plugin", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PluginInfo" } } } },
+          "404": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/plugins/{node}/{plugin}/config": {
+      "get": {
+        "tags": ["plugins"],
+        "operationId": "getPluginConfig",
+        "parameters": [
+          { "$ref": "#/components/parameters/NodeIdPath" },
+          { "$ref": "#/components/parameters/PluginName" }
+        ],
+        "responses": {
+          "200": { "description": "Config JSON", "content": { "application/json": { "schema": { "description": "Plugin config", "additionalProperties": true } } } },
+          "404": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/plugins/{node}/{plugin}/config/reload": {
+      "put": {
+        "tags": ["plugins"],
+        "operationId": "reloadPluginConfig",
+        "parameters": [
+          { "$ref": "#/components/parameters/NodeIdPath" },
+          { "$ref": "#/components/parameters/PluginName" }
+        ],
+        "responses": {
+          "200": { "description": "Reloaded", "content": { "application/json": { "schema": { "type": "boolean" } } } },
+          "400": { "$ref": "#/components/responses/Error" },
+          "404": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/plugins/{node}/{plugin}/load": {
+      "put": {
+        "tags": ["plugins"],
+        "operationId": "loadPlugin",
+        "parameters": [
+          { "$ref": "#/components/parameters/NodeIdPath" },
+          { "$ref": "#/components/parameters/PluginName" }
+        ],
+        "responses": {
+          "200": { "description": "Loaded", "content": { "application/json": { "schema": { "type": "boolean" } } } },
+          "400": { "$ref": "#/components/responses/Error" },
+          "404": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/plugins/{node}/{plugin}/unload": {
+      "put": {
+        "tags": ["plugins"],
+        "operationId": "unloadPlugin",
+        "parameters": [
+          { "$ref": "#/components/parameters/NodeIdPath" },
+          { "$ref": "#/components/parameters/PluginName" }
+        ],
+        "responses": {
+          "200": { "description": "Unloaded", "content": { "application/json": { "schema": { "type": "boolean" } } } },
+          "400": { "$ref": "#/components/responses/Error" },
+          "404": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/stats": {
+      "get": {
+        "tags": ["stats"],
+        "operationId": "listStats",
+        "responses": {
+          "200": { "description": "Per-node stats", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/NodeStats" } } } } }
+        }
+      }
+    },
+    "/stats/sum": {
+      "get": {
+        "tags": ["stats"],
+        "operationId": "statsSum",
+        "responses": {
+          "200": { "description": "Cluster stats sum", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/StatsSum" } } } }
+        }
+      }
+    },
+    "/stats/history": {
+      "get": {
+        "tags": ["stats"],
+        "operationId": "statsHistory",
+        "parameters": [{ "$ref": "#/components/parameters/HistoryQuery" }],
+        "responses": {
+          "200": { "description": "History", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HistoryCluster" } } } },
+          "404": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/stats/history/sum": {
+      "get": {
+        "tags": ["stats"],
+        "operationId": "statsHistorySum",
+        "parameters": [{ "$ref": "#/components/parameters/HistoryQuery" }],
+        "responses": {
+          "200": { "description": "History sum", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HistorySum" } } } },
+          "404": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/metrics": {
+      "get": {
+        "tags": ["metrics"],
+        "operationId": "listMetrics",
+        "responses": {
+          "200": { "description": "Per-node metrics", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/NodeMetrics" } } } } }
+        }
+      }
+    },
+    "/metrics/sum": {
+      "get": {
+        "tags": ["metrics"],
+        "operationId": "metricsSum",
+        "responses": {
+          "200": { "description": "Cluster metrics sum", "content": { "application/json": { "schema": { "type": "object", "additionalProperties": { "type": "number" } } } } }
+        }
+      }
+    },
+    "/metrics/history": {
+      "get": {
+        "tags": ["metrics"],
+        "operationId": "metricsHistory",
+        "parameters": [{ "$ref": "#/components/parameters/HistoryQuery" }],
+        "responses": {
+          "200": { "description": "History", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HistoryCluster" } } } },
+          "404": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/metrics/history/sum": {
+      "get": {
+        "tags": ["metrics"],
+        "operationId": "metricsHistorySum",
+        "parameters": [{ "$ref": "#/components/parameters/HistoryQuery" }],
+        "responses": {
+          "200": { "description": "History sum", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HistorySum" } } } },
+          "404": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": { "type": "http", "scheme": "bearer" }
+    },
+    "parameters": {
+      "NodeId": { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } },
+      "NodeIdPath": { "name": "node", "in": "path", "required": true, "schema": { "type": "integer" } },
+      "ClientId": { "name": "clientid", "in": "path", "required": true, "schema": { "type": "string" } },
+      "PluginName": { "name": "plugin", "in": "path", "required": true, "schema": { "type": "string" } },
+      "Limit": { "name": "_limit", "in": "query", "schema": { "type": "integer", "minimum": 0 } },
+      "LimitAlias": { "name": "limit", "in": "query", "schema": { "type": "integer", "minimum": 0 } },
+      "Offset": { "name": "_offset", "in": "query", "schema": { "type": "integer", "minimum": 0 } },
+      "OffsetAlias": { "name": "offset", "in": "query", "schema": { "type": "integer", "minimum": 0 } },
+      "Format": {
+        "name": "format",
+        "in": "query",
+        "description": "P2: `page` wraps list bodies as {items,row_count,truncated}. Ignored by P1 brokers.",
+        "schema": { "type": "string", "enum": ["page"] }
+      },
+      "HistoryQuery": {
+        "name": "minutes",
+        "in": "query",
+        "style": "form",
+        "explode": true,
+        "schema": { "type": "object", "additionalProperties": true }
+      }
+    },
+    "headers": {
+      "X-Row-Count": { "description": "Rows in this response body", "schema": { "type": "integer" } },
+      "X-Truncated": { "description": "`true` when `_limit` / max_row_limit cut the result", "schema": { "type": "boolean" } }
+    },
+    "schemas": {
+      "ApiError": {
+        "type": "object",
+        "required": ["code", "message"],
+        "properties": {
+          "code": { "oneOf": [{ "type": "integer" }, { "type": "string" }], "description": "HTTP status or stable error code" },
+          "message": { "type": "string" },
+          "details": {},
+          "request_id": { "type": "string" }
+        }
+      },
+      "ApiEndpoint": {
+        "type": "object",
+        "properties": {
+          "path": { "type": "string" },
+          "name": { "type": "string" },
+          "method": { "type": "string" },
+          "descr": { "type": "string" }
+        }
+      },
+      "BrokerInfo": {
+        "type": "object",
+        "properties": {
+          "datetime": { "type": "string" },
+          "node_id": { "type": "integer" },
+          "node_name": { "type": "string" },
+          "running": { "type": "boolean" },
+          "sysdescr": { "type": "string" },
+          "uptime": { "type": "string" },
+          "version": { "type": "string" },
+          "rustc_version": { "type": "string" }
+        }
+      },
+      "NodeInfo": {
+        "type": "object",
+        "properties": {
+          "boottime": { "type": "string" },
+          "connections": { "type": "number" },
+          "disk_free": { "type": "number" },
+          "disk_total": { "type": "number" },
+          "load1": { "type": "number" },
+          "load5": { "type": "number" },
+          "load15": { "type": "number" },
+          "memory_free": { "type": "number" },
+          "memory_total": { "type": "number" },
+          "memory_used": { "type": "number" },
+          "node_id": { "type": "integer" },
+          "node_name": { "type": "string" },
+          "running": { "type": "boolean" },
+          "uptime": { "type": "string" },
+          "version": { "type": "string" },
+          "rustc_version": { "type": "string" }
+        }
+      },
+      "FeatureFlags": {
+        "type": "object",
+        "properties": {
+          "retain": { "type": "boolean" },
+          "message_storage": { "type": "boolean" },
+          "session_storage": { "type": "boolean" },
+          "delayed": { "type": "boolean" },
+          "shared_subscription": { "type": "boolean" },
+          "auto_subscription": { "type": "boolean" }
+        }
+      },
+      "FeatureNode": {
+        "type": "object",
+        "properties": {
+          "node_id": { "type": "integer" },
+          "node_name": { "type": "string" },
+          "features": { "$ref": "#/components/schemas/FeatureFlags" }
+        }
+      },
+      "FeatureConflict": {
+        "type": "object",
+        "properties": {
+          "feature": { "type": "string" },
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "value": { "type": "boolean" },
+                "node_ids": { "type": "array", "items": { "type": "integer" } }
+              }
+            }
+          }
+        }
+      },
+      "FeaturesResponse": {
+        "type": "object",
+        "properties": {
+          "consistent": { "type": "boolean" },
+          "node_count": { "type": "integer" },
+          "conflicts": { "type": "array", "items": { "$ref": "#/components/schemas/FeatureConflict" } },
+          "nodes": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                { "$ref": "#/components/schemas/FeatureNode" },
+                { "type": "string", "description": "Unreachable node error" }
+              ]
+            }
+          }
+        }
+      },
+      "NodeHealth": {
+        "type": "object",
+        "properties": {
+          "node_id": { "type": "integer" },
+          "name": { "type": "string" },
+          "running": { "type": "boolean" },
+          "uptime": { "type": "string" },
+          "status": { "type": "string" },
+          "leader_id": { "type": "integer" },
+          "descr": { "type": "string" }
+        }
+      },
+      "HealthCheck": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string" },
+          "running": { "type": "boolean" },
+          "descr": { "type": "string" },
+          "nodes": {
+            "oneOf": [
+              { "type": "array", "items": { "$ref": "#/components/schemas/NodeHealth" } },
+              { "type": "object", "additionalProperties": { "$ref": "#/components/schemas/NodeHealth" } }
+            ]
+          }
+        }
+      },
+      "LastWill": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" },
+          "qos": { "type": "integer" },
+          "retain": { "type": "boolean" },
+          "topic": { "type": "string" }
+        }
+      },
+      "ClientInfo": {
+        "type": "object",
+        "properties": {
+          "node_id": { "type": "integer" },
+          "clientid": { "type": "string" },
+          "username": { "type": "string" },
+          "superuser": { "type": "boolean" },
+          "proto_ver": { "type": "integer" },
+          "ip_address": { "type": "string" },
+          "port": { "type": "integer" },
+          "connected_at": { "type": "string" },
+          "disconnected_at": { "type": "string" },
+          "disconnected_reason": { "type": "string" },
+          "connected": { "type": "boolean" },
+          "keepalive": { "type": "integer" },
+          "clean_start": { "type": "boolean" },
+          "session_present": { "type": "boolean" },
+          "expiry_interval": { "type": "integer" },
+          "created_at": { "type": "string" },
+          "subscriptions_cnt": { "type": "integer" },
+          "max_subscriptions": { "type": "integer" },
+          "inflight": { "type": "integer" },
+          "max_inflight": { "type": "integer" },
+          "mqueue_len": { "type": "integer" },
+          "max_mqueue": { "type": "integer" },
+          "last_will": { "oneOf": [{ "$ref": "#/components/schemas/LastWill" }, { "type": "null" }] }
+        }
+      },
+      "PageMeta": {
+        "type": "object",
+        "properties": {
+          "row_count": { "type": "integer" },
+          "truncated": { "type": "boolean" },
+          "offset": { "type": "integer" },
+          "limit": { "type": "integer" },
+          "has_more": { "type": "boolean" }
+        }
+      },
+      "ClientPage": {
+        "allOf": [
+          { "$ref": "#/components/schemas/PageMeta" },
+          { "type": "object", "required": ["items"], "properties": { "items": { "type": "array", "items": { "$ref": "#/components/schemas/ClientInfo" } } } }
+        ]
+      },
+      "SubscriptionInfo": {
+        "type": "object",
+        "properties": {
+          "node_id": { "type": "integer" },
+          "clientid": { "type": "string" },
+          "client_addr": { "type": "string" },
+          "topic": { "type": "string" },
+          "qos": { "type": "integer" },
+          "share": { "oneOf": [{ "type": "string" }, { "type": "null" }] },
+          "opts": { "type": "object", "additionalProperties": true }
+        }
+      },
+      "SubscriptionPage": {
+        "allOf": [
+          { "$ref": "#/components/schemas/PageMeta" },
+          { "type": "object", "required": ["items"], "properties": { "items": { "type": "array", "items": { "$ref": "#/components/schemas/SubscriptionInfo" } } } }
+        ]
+      },
+      "RouteInfo": {
+        "type": "object",
+        "properties": {
+          "topic": { "type": "string" },
+          "node_id": { "type": "integer" }
+        }
+      },
+      "RoutePage": {
+        "allOf": [
+          { "$ref": "#/components/schemas/PageMeta" },
+          { "type": "object", "required": ["items"], "properties": { "items": { "type": "array", "items": { "$ref": "#/components/schemas/RouteInfo" } } } }
+        ]
+      },
+      "RetainFrom": {
+        "type": "object",
+        "properties": {
+          "typ": { "type": "string" },
+          "id": {
+            "type": "object",
+            "properties": {
+              "node_id": { "type": "integer" },
+              "client_id": { "type": "string" }
+            }
+          }
+        }
+      },
+      "RetainPublish": {
+        "type": "object",
+        "properties": {
+          "topic": { "type": "string" },
+          "qos": { "type": "integer" },
+          "retain": { "type": "boolean" },
+          "dup": { "type": "boolean" },
+          "payload": { "type": "string" },
+          "create_time": { "type": "number" },
+          "properties": { "oneOf": [{ "type": "object", "additionalProperties": true }, { "type": "null" }] }
+        }
+      },
+      "RetainItem": {
+        "type": "object",
+        "properties": {
+          "topic": { "type": "string" },
+          "msg_id": { "type": "integer" },
+          "from": { "$ref": "#/components/schemas/RetainFrom" },
+          "publish": { "$ref": "#/components/schemas/RetainPublish" },
+          "remaining_ttl": { "oneOf": [{ "type": "number" }, { "type": "null" }] },
+          "client_id": { "type": "string" }
+        }
+      },
+      "RetainPage": {
+        "allOf": [
+          { "$ref": "#/components/schemas/PageMeta" },
+          {
+            "type": "object",
+            "required": ["items"],
+            "properties": {
+              "items": { "type": "array", "items": { "$ref": "#/components/schemas/RetainItem" } },
+              "has_more": { "type": "boolean" }
+            }
+          }
+        ]
+      },
+      "PublishRequest": {
+        "type": "object",
+        "required": ["payload"],
+        "properties": {
+          "topic": { "type": "string" },
+          "topics": { "type": "string" },
+          "clientid": { "type": "string" },
+          "payload": { "type": "string" },
+          "encoding": { "type": "string", "enum": ["plain", "base64"] },
+          "qos": { "type": "integer" },
+          "retain": { "type": "boolean" },
+          "properties": {
+            "type": "object",
+            "properties": {
+              "message_expiry_interval": { "type": "integer" },
+              "topic_alias": { "type": "integer" },
+              "response_topic": { "type": "string" },
+              "correlation_data": { "type": "string" },
+              "user_properties": { "type": "object", "additionalProperties": { "type": "string" } }
+            }
+          }
+        }
+      },
+      "SubscribeRequest": {
+        "type": "object",
+        "required": ["clientid"],
+        "properties": {
+          "topic": { "type": "string" },
+          "topics": { "type": "string" },
+          "clientid": { "type": "string" },
+          "qos": { "type": "integer" }
+        }
+      },
+      "UnsubscribeRequest": {
+        "type": "object",
+        "required": ["topic", "clientid"],
+        "properties": {
+          "topic": { "type": "string" },
+          "clientid": { "type": "string" }
+        }
+      },
+      "KickCount": {
+        "type": "object",
+        "properties": { "count": { "type": "integer" } }
+      },
+      "PluginInfo": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "version": { "oneOf": [{ "type": "string" }, { "type": "null" }] },
+          "descr": { "oneOf": [{ "type": "string" }, { "type": "null" }] },
+          "authors": { "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }, { "type": "null" }] },
+          "homepage": { "oneOf": [{ "type": "string" }, { "type": "null" }] },
+          "license": { "oneOf": [{ "type": "string" }, { "type": "null" }] },
+          "repository": { "oneOf": [{ "type": "string" }, { "type": "null" }] },
+          "active": { "type": "boolean" },
+          "inited": { "type": "boolean" },
+          "immutable": { "type": "boolean" },
+          "attrs": {}
+        }
+      },
+      "NodePlugins": {
+        "type": "object",
+        "properties": {
+          "node": { "type": "integer" },
+          "plugins": { "type": "array", "items": { "$ref": "#/components/schemas/PluginInfo" } }
+        }
+      },
+      "PluginClusterPage": {
+        "allOf": [
+          { "$ref": "#/components/schemas/PageMeta" },
+          { "type": "object", "required": ["items"], "properties": { "items": { "type": "array", "items": { "$ref": "#/components/schemas/NodePlugins" } } } }
+        ]
+      },
+      "StatsNode": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "running": { "type": "boolean" }
+        }
+      },
+      "NodeStats": {
+        "type": "object",
+        "properties": {
+          "node": { "$ref": "#/components/schemas/StatsNode" },
+          "stats": { "type": "object", "additionalProperties": { "type": "number" } }
+        }
+      },
+      "StatsSum": {
+        "type": "object",
+        "properties": {
+          "nodes": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "running": { "type": "boolean" }
+              }
+            }
+          },
+          "stats": { "type": "object", "additionalProperties": { "type": "number" } }
+        }
+      },
+      "HistoryPoint": {
+        "type": "object",
+        "properties": { "ts": { "type": "number" } },
+        "additionalProperties": { "type": "number" }
+      },
+      "HistoryNode": {
+        "type": "object",
+        "properties": {
+          "from": { "type": "number" },
+          "to": { "type": "number" },
+          "node": { "type": "number" },
+          "count": { "type": "number" },
+          "data": { "type": "array", "items": { "$ref": "#/components/schemas/HistoryPoint" } }
+        }
+      },
+      "HistoryCluster": {
+        "type": "object",
+        "properties": {
+          "from": { "type": "number" },
+          "to": { "type": "number" },
+          "nodes": { "type": "object", "additionalProperties": { "$ref": "#/components/schemas/HistoryNode" } }
+        }
+      },
+      "HistorySum": {
+        "type": "object",
+        "properties": {
+          "from": { "type": "number" },
+          "to": { "type": "number" },
+          "node_count": { "type": "number" },
+          "count": { "type": "number" },
+          "data": { "type": "array", "items": { "$ref": "#/components/schemas/HistoryPoint" } }
+        }
+      },
+      "NodeMetrics": {
+        "type": "object",
+        "properties": {
+          "node": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "integer" },
+              "name": { "type": "string" }
+            }
+          },
+          "metrics": { "type": "object", "additionalProperties": { "type": "number" } }
+        }
+      }
+    },
+    "responses": {
+      "Error": {
+        "description": "JSON error `{code,message,details?,request_id?}`",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiError" } } }
+      },
+      "ClientList": {
+        "description": "Bare array (P1) or `{items,...}` when `format=page`",
+        "headers": {
+          "X-Row-Count": { "$ref": "#/components/headers/X-Row-Count" },
+          "X-Truncated": { "$ref": "#/components/headers/X-Truncated" }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "oneOf": [
+                { "type": "array", "items": { "$ref": "#/components/schemas/ClientInfo" } },
+                { "$ref": "#/components/schemas/ClientPage" }
+              ]
+            }
+          }
+        }
+      },
+      "SubscriptionList": {
+        "description": "Bare array or page",
+        "headers": {
+          "X-Row-Count": { "$ref": "#/components/headers/X-Row-Count" },
+          "X-Truncated": { "$ref": "#/components/headers/X-Truncated" }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "oneOf": [
+                { "type": "array", "items": { "$ref": "#/components/schemas/SubscriptionInfo" } },
+                { "$ref": "#/components/schemas/SubscriptionPage" }
+              ]
+            }
+          }
+        }
+      },
+      "RouteList": {
+        "description": "Bare array or page",
+        "headers": {
+          "X-Row-Count": { "$ref": "#/components/headers/X-Row-Count" },
+          "X-Truncated": { "$ref": "#/components/headers/X-Truncated" }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "oneOf": [
+                { "type": "array", "items": { "$ref": "#/components/schemas/RouteInfo" } },
+                { "$ref": "#/components/schemas/RoutePage" }
+              ]
+            }
+          }
+        }
+      },
+      "RetainList": {
+        "description": "`{items,has_more}` or `format=page`",
+        "headers": {
+          "X-Row-Count": { "$ref": "#/components/headers/X-Row-Count" },
+          "X-Truncated": { "$ref": "#/components/headers/X-Truncated" }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "oneOf": [
+                { "$ref": "#/components/schemas/RetainPage" },
+                { "type": "array", "items": { "$ref": "#/components/schemas/RetainItem" } }
+              ]
+            }
+          }
+        }
+      },
+      "PluginClusterList": {
+        "description": "Cluster plugin inventory",
+        "headers": {
+          "X-Row-Count": { "$ref": "#/components/headers/X-Row-Count" },
+          "X-Truncated": { "$ref": "#/components/headers/X-Truncated" }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "oneOf": [
+                { "type": "array", "items": { "$ref": "#/components/schemas/NodePlugins" } },
+                { "$ref": "#/components/schemas/PluginClusterPage" }
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -4,6 +4,9 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { DataTable } from '@/components/data-table'
+import { FeatureUnavailable } from '@/components/feature-gate'
+import { useRequiredFeature } from '@/lib/features'
+import { ListMeta } from '@/components/list-meta'
 import { PageHeader } from '@/components/page-header'
 import { ErrorState, TableSkeleton } from '@/components/query-state'
 import {
@@ -22,22 +25,24 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toastApiError } from '@/lib/api'
 import { endpoints } from '@/lib/endpoints'
+import { DEFAULT_PAGE_SIZE } from '@/lib/list'
 import type { RetainItem } from '@/lib/types'
 import { decodeBase64Utf8 } from '@/lib/utils'
 
 export function RetainsPage() {
   const { t } = useTranslation()
   const qc = useQueryClient()
+  const retain = useRequiredFeature('retain')
   const [topicFilter, setTopicFilter] = useState('#')
-  const [offset, setOffset] = useState(0)
-  const [limit, setLimit] = useState(50)
-  const [applied, setApplied] = useState({ topic_filter: '#', offset: 0, limit: 50 })
+  const [limit, setLimit] = useState(DEFAULT_PAGE_SIZE)
+  const [applied, setApplied] = useState({ topic_filter: '#', offset: 0, limit: DEFAULT_PAGE_SIZE })
   const [preview, setPreview] = useState<RetainItem | null>(null)
   const [delTopic, setDelTopic] = useState<string | null>(null)
 
   const listQ = useQuery({
     queryKey: ['retains', applied],
     queryFn: () => endpoints.retains(applied),
+    enabled: retain.allowed,
   })
 
   const delMut = useMutation({
@@ -60,7 +65,7 @@ export function RetainsPage() {
       {
         id: 'from',
         header: t('retains.from'),
-        cell: ({ row }) => row.original.from?.id?.client_id ?? row.original.from?.typ ?? '—',
+        cell: ({ row }) => row.original.from?.id?.client_id ?? row.original.client_id ?? row.original.from?.typ ?? '—',
       },
       {
         id: 'ttl',
@@ -101,8 +106,9 @@ export function RetainsPage() {
     [t],
   )
 
-  const items = listQ.data?.items ?? []
-  const hasMore = listQ.data?.has_more ?? false
+  if (!retain.isLoading && !retain.allowed) {
+    return <FeatureUnavailable feature="retain" />
+  }
 
   return (
     <div>
@@ -120,26 +126,41 @@ export function RetainsPage() {
           <Label className="text-xs text-muted-foreground">{t('retains.topicFilter')}</Label>
           <Input className="w-64 font-mono" value={topicFilter} onChange={(e) => setTopicFilter(e.target.value)} />
         </div>
-        <div className="space-y-1.5">
-          <Label className="text-xs text-muted-foreground">{t('common.offset')}</Label>
-          <Input className="w-24" type="number" value={offset} onChange={(e) => setOffset(Number(e.target.value))} />
-        </div>
-        <div className="space-y-1.5">
-          <Label className="text-xs text-muted-foreground">{t('common.limit')}</Label>
-          <Input className="w-24" type="number" value={limit} onChange={(e) => setLimit(Number(e.target.value))} />
-        </div>
-        <Button size="sm" onClick={() => setApplied({ topic_filter: topicFilter || '#', offset, limit })}>
+        <Button
+          size="sm"
+          onClick={() => {
+            setApplied({ topic_filter: topicFilter || '#', offset: 0, limit })
+          }}
+        >
           {t('common.apply')}
         </Button>
-        {hasMore ? <span className="text-xs text-muted-foreground">{t('common.more')}</span> : null}
       </div>
 
-      {listQ.isLoading ? (
+      {listQ.isLoading || retain.isLoading ? (
         <TableSkeleton />
       ) : listQ.error ? (
         <ErrorState error={listQ.error} onRetry={() => void listQ.refetch()} />
       ) : (
-        <DataTable columns={columns} data={items} searchKey="topic" />
+        <DataTable
+          columns={columns}
+          data={listQ.data?.items ?? []}
+          searchKey="topic"
+          hidePagination
+          footer={
+            listQ.data ? (
+              <ListMeta
+                page={listQ.data}
+                onOffsetChange={(next) => {
+                  setApplied((prev) => ({ ...prev, offset: next }))
+                }}
+                onLimitChange={(n) => {
+                  setLimit(n)
+                  setApplied((prev) => ({ ...prev, limit: n, offset: 0 }))
+                }}
+              />
+            ) : null
+          }
+        />
       )}
 
       <Dialog open={!!preview} onOpenChange={(o) => !o && setPreview(null)}>

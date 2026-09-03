@@ -50,6 +50,9 @@ export type FeatureNode = {
   features: FeatureFlags
 }
 
+/** Unreachable nodes may appear as error strings (P1 FeaturesInfoOrError). */
+export type FeatureNodeOrError = FeatureNode | string
+
 export type FeatureConflict = {
   feature: string
   values: { value: boolean; node_ids: number[] }[]
@@ -59,7 +62,7 @@ export type FeaturesResponse = {
   consistent: boolean
   node_count: number
   conflicts: FeatureConflict[]
-  nodes: FeatureNode[]
+  nodes: FeatureNodeOrError[]
 }
 
 export type NodeHealth = {
@@ -122,6 +125,9 @@ export type ClientInfo = {
 
 export type ClientQuery = {
   _limit?: number
+  limit?: number
+  offset?: number
+  _offset?: number
   clientid?: string
   username?: string
   ip_address?: string
@@ -177,6 +183,7 @@ export type RetainItem = {
   from?: RetainFrom
   publish?: RetainPublish
   remaining_ttl?: number | null
+  client_id?: string
 }
 
 export type RetainsResponse = {
@@ -277,3 +284,5 @@ export type HistoryQuery = {
   limit?: number
   merge_window?: number
 }
+
+export type { PageResult } from '@/lib/list'

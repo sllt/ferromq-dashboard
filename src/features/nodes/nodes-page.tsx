@@ -9,18 +9,9 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { asArray, endpoints } from '@/lib/endpoints'
-import type { FeatureFlags, HealthCheck, NodeHealth, NodeInfo } from '@/lib/types'
+import { FEATURE_KEYS, featureNodes } from '@/lib/features'
+import type { HealthCheck, NodeHealth, NodeInfo } from '@/lib/types'
 import { formatBytes, formatLoad, formatNumber } from '@/lib/utils'
-
-const FEATURE_KEYS: (keyof FeatureFlags)[] = [
-  'retain',
-  'message_storage',
-  'session_storage',
-  'delayed',
-  'shared_subscription',
-  'auto_subscription',
-]
-
 
 function normalizeHealthNodes(health: HealthCheck | undefined): Array<NodeHealth & { key: string }> {
   const nodes = health?.nodes
@@ -168,7 +159,7 @@ export function NodesPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {(features?.nodes ?? []).map((n) => (
+                  {featureNodes(features).map((n) => (
                     <tr key={n.node_id} className="border-t">
                       <td className="py-2 pr-3 font-mono">{n.node_name}</td>
                       {FEATURE_KEYS.map((k) => (

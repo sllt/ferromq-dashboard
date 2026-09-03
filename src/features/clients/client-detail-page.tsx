@@ -133,7 +133,7 @@ export function ClientDetailPage() {
       ) : subsQ.error ? (
         <ErrorState error={subsQ.error} onRetry={() => void subsQ.refetch()} />
       ) : (
-        <DataTable columns={columns} data={subsQ.data ?? []} searchKey="topic" />
+        <DataTable columns={columns} data={subsQ.data?.items ?? []} searchKey="topic" />
       )}
     </div>
   )

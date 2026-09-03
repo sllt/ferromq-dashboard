@@ -21,6 +21,7 @@ export function PluginsPage() {
   const [config, setConfig] = useState<{ node: number; name: string; json: unknown } | null>(null)
 
   const listQ = useQuery({ queryKey: ['plugins'], queryFn: endpoints.plugins })
+  const cluster = listQ.data?.items ?? []
 
   const invalidate = async () => {
     await qc.invalidateQueries({ queryKey: ['plugins'] })
@@ -51,7 +52,7 @@ export function PluginsPage() {
     onError: toastApiError,
   })
 
-  const rows: Row[] = (listQ.data ?? []).flatMap((n) => n.plugins.map((p) => ({ ...p, node: n.node })))
+  const rows: Row[] = cluster.flatMap((n) => n.plugins.map((p) => ({ ...p, node: n.node })))
 
   const columns = useMemo<ColumnDef<Row>[]>(
     () => [
@@ -154,7 +155,19 @@ export function PluginsPage() {
       ) : listQ.error ? (
         <ErrorState error={listQ.error} onRetry={() => void listQ.refetch()} />
       ) : (
-        <DataTable columns={columns} data={rows} searchKey="name" />
+        <DataTable
+          columns={columns}
+          data={rows}
+          searchKey="name"
+          footer={
+            listQ.data ? (
+              <p className="text-xs text-muted-foreground">
+                {t('list.clusterRows', { count: listQ.data.rowCount })}
+                {listQ.data.truncated ? ` · ${t('list.truncatedShort')}` : ''}
+              </p>
+            ) : null
+          }
+        />
       )}
 
       <Dialog open={!!config} onOpenChange={(o) => !o && setConfig(null)}>

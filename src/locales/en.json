@@ -73,6 +73,29 @@
     "historyUnavailable": "History storage is not enabled on this broker.",
     "optional": "Optional"
   },
+  "errors": {
+    "generic": "Request failed",
+    "badRequest": "Invalid request",
+    "unauthorized": "Unauthorized — reconnect",
+    "forbidden": "You cannot perform this action",
+    "notFound": "Resource not found",
+    "conflict": "Conflict",
+    "unavailable": "Service temporarily unavailable",
+    "requestId": "request id"
+  },
+  "list": {
+    "showing": "{{from}}–{{to}} of {{total}} on this page",
+    "perPage": "{{count}} / page",
+    "truncated": "Result truncated ({{count}} rows on this page). The broker set X-Truncated or format=page has_more.",
+    "truncatedShort": "truncated",
+    "clusterRows": "{{count}} cluster rows"
+  },
+  "features": {
+    "disabled": "not enabled on this cluster",
+    "unavailableTitle": "Capability unavailable",
+    "unavailableHint": "This cluster does not enable {{feature}}. The matching nav item is disabled.",
+    "sessionStorageHint": "Offline clients need session storage; the list may be empty."
+  },
   "theme": {
     "light": "Light",
     "dark": "Dark",

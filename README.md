@@ -18,6 +18,8 @@ FerroMQ HTTP API (`/api/v1`) 的运维控制台。基于 React 19、Vite、TypeS
 | 发布 | `POST /mqtt/publish` |
 | 插件 | 集群 JSON `[{node, plugins:[...]}]`；`load` / `unload` / `config/reload` / `config` |
 
+列表页（客户端 / 订阅 / 路由 / 保留消息 / 插件）读取 `X-Row-Count` / `X-Truncated`，支持 `_limit` / `offset`。若 Broker 支持 `?format=page`，优先使用 `{items,row_count,truncated}`，否则回退为裸数组。侧栏与操作会根据 `GET /features` 隐藏或禁用未启用的能力（如保留消息、共享订阅、会话存储）。错误体解析 `{code,message,details?,request_id?}`，toast / 页面错误展示友好文案。
+
 ## 开发
 
 需要 Node.js 20+ 与 [pnpm](https://pnpm.io)。
@@ -39,6 +41,21 @@ pnpm dev
 ```
 
 请先启动 FerroMQ，并确保 `ferromq-http-api` 插件在 `6060`（或你配置的端口）监听。
+
+## OpenAPI 与类型生成
+
+仓库内置 `openapi/openapi.json`（与当前 `/api/v1` 控制台表面一致的 stub）。`pnpm build` **不依赖** 实时 Broker。
+
+```bash
+# 用 stub 生成 src/api/generated/schema.d.ts
+pnpm gen:api
+
+# Broker 已提供 GET /api/v1/openapi.json 时，刷新 stub 再生成
+# 等价于：curl localhost:6060/api/v1/openapi.json -o openapi/openapi.json
+pnpm gen:api:live
+```
+
+详见 [openapi/README.md](./openapi/README.md)。
 
 ## 登录
 

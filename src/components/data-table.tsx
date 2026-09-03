@@ -22,6 +22,9 @@ type DataTableProps<TData, TValue> = {
   searchPlaceholder?: string
   pageSize?: number
   toolbar?: React.ReactNode
+  /** When true, the current `data` is already one server page. */
+  hidePagination?: boolean
+  footer?: React.ReactNode
 }
 
 export function DataTable<TData, TValue>({
@@ -31,6 +34,8 @@ export function DataTable<TData, TValue>({
   searchPlaceholder,
   pageSize = 20,
   toolbar,
+  hidePagination = false,
+  footer,
 }: DataTableProps<TData, TValue>) {
   const { t } = useTranslation()
   const [sorting, setSorting] = useState<SortingState>([])
@@ -46,7 +51,7 @@ export function DataTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    initialState: { pagination: { pageSize } },
+    initialState: { pagination: { pageSize: hidePagination ? 10_000 : pageSize } },
     globalFilterFn: (row, _columnId, filterValue) => {
       if (!filterValue) return true
       const q = String(filterValue).toLowerCase()
@@ -112,25 +117,28 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
-        <span>{t('common.rows', { count: table.getFilteredRowModel().rows.length })}</span>
-        <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            {t('common.prev')}
-          </Button>
-          <span>
-            {table.getState().pagination.pageIndex + 1} {t('common.of')} {table.getPageCount() || 1}
-          </span>
-          <Button size="sm" variant="outline" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
-            {t('common.next')}
-          </Button>
+      {footer}
+      {hidePagination ? null : (
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <span>{t('common.rows', { count: table.getFilteredRowModel().rows.length })}</span>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+            >
+              {t('common.prev')}
+            </Button>
+            <span>
+              {table.getState().pagination.pageIndex + 1} {t('common.of')} {table.getPageCount() || 1}
+            </span>
+            <Button size="sm" variant="outline" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
+              {t('common.next')}
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }
