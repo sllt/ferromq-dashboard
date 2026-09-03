@@ -3,7 +3,7 @@
  */
 import { parseErrorBody } from '../src/lib/api-error.ts'
 import { parseListResponse } from '../src/lib/list-parse.ts'
-import { canWrite, parseSessionUser } from '../src/lib/session-user.ts'
+import { canAdmin, canWrite, parseSessionUser } from '../src/lib/session-user.ts'
 
 let failed = 0
 function assert(name, cond) {
@@ -52,6 +52,10 @@ assert('viewer cannot write', viewer?.role === 'viewer' && canWrite(viewer) === 
 assert('reject missing role', parseSessionUser({ username: 'x', auth: 'session' }) === null)
 assert('reject password leak shape', parseSessionUser({ username: 'a', role: 'admin', auth: 'session', password: 'secret' })?.username === 'a')
 assert('anonymous admin can write', canWrite({ username: 'anonymous', role: 'admin', auth: 'anonymous' }))
+const ops = parseSessionUser({ username: 'ops', role: 'operator', auth: 'session' })
+assert('operator can write but not admin', ops?.role === 'operator' && canWrite(ops) === true && canAdmin(ops) === false)
+assert('admin can admin', canAdmin({ username: 'admin', role: 'admin', auth: 'session' }) === true)
+assert('api_key auth', parseSessionUser({ username: 'ci', role: 'operator', auth: 'api_key', key_id: 'k1' })?.auth === 'api_key')
 
 if (failed) {
   console.error(`${failed} failed`)

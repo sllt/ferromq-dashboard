@@ -3,10 +3,16 @@ import { partitionCluster } from '@/lib/cluster'
 import { apiGetList, type ListQuery } from '@/lib/list'
 import type {
   ApiEndpoint,
+  ApiKeyCreated,
+  ApiKeyInfo,
+  AuditEvent,
   BrokerInfo,
   ChangePasswordRequest,
   ClientInfo,
   ClientQuery,
+  CreateApiKeyRequest,
+  CreateUserRequest,
+  DashboardUser,
   FeaturesResponse,
   FeatureNode,
   HealthCheck,
@@ -34,6 +40,21 @@ export const endpoints = {
   me: () => apiGet<SessionUser>('/auth/me'),
   changePassword: (body: ChangePasswordRequest) => apiPost<SessionUser>('/auth/change-password', body),
   init: () => apiPost<SessionUser>('/auth/init'),
+
+  users: (query?: ListQuery) => apiGetList<DashboardUser>('/users', query),
+  createUser: (body: CreateUserRequest) => apiPost<DashboardUser>('/users', body),
+  disableUser: (username: string) =>
+    apiPost<DashboardUser>(`/users/${encodeURIComponent(username)}/disable`),
+  enableUser: (username: string) =>
+    apiPost<DashboardUser>(`/users/${encodeURIComponent(username)}/enable`),
+
+  apiKeys: (query?: ListQuery) => apiGetList<ApiKeyInfo>('/api-keys', query),
+  createApiKey: (body: CreateApiKeyRequest) => apiPost<ApiKeyCreated>('/api-keys', body),
+  apiKey: (id: string) => apiGet<ApiKeyInfo>(`/api-keys/${encodeURIComponent(id)}`),
+  deleteApiKey: (id: string) => apiDelete<{ ok?: boolean }>(`/api-keys/${encodeURIComponent(id)}`),
+
+  audit: (query?: ListQuery & { action?: string; username?: string; success?: string }) =>
+    apiGetList<AuditEvent>('/audit', query),
 
   listApis: () => apiGet<ApiEndpoint[]>('/'),
   openapi: () => apiGet<Record<string, unknown>>('/openapi.json'),

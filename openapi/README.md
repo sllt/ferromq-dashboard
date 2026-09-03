@@ -2,9 +2,9 @@
 
 Vendored copy of the broker spec used by `pnpm gen:api`.
 
-Upstream (dashboard/P3a):
+Upstream (dashboard/P3b):
 `ferromq-plugins/ferromq-http-api/openapi/openapi.json`
-on branch `dashboard/p3a-session-auth` ([ferromq#3](https://github.com/sllt/ferromq/pull/3)).
+on branch `dashboard/p3b-apikeys-audit` ([ferromq#4](https://github.com/sllt/ferromq/pull/4)).
 
 Live broker:
 
@@ -18,7 +18,7 @@ Live broker:
 pnpm gen:api:live
 
 # or copy the checked-in broker file
-# curl -sfL https://raw.githubusercontent.com/sllt/ferromq/dashboard/p3a-session-auth/ferromq-plugins/ferromq-http-api/openapi/openapi.json -o openapi/openapi.json
+# curl -sfL https://raw.githubusercontent.com/sllt/ferromq/dashboard/p3b-apikeys-audit/ferromq-plugins/ferromq-http-api/openapi/openapi.json -o openapi/openapi.json
 pnpm gen:api
 ```
 
@@ -29,8 +29,9 @@ The broker file on PR3 currently duplicates `components.securitySchemes`. This v
 ## Contract the dashboard relies on
 
 - Auth: `POST /auth/login` `{username,password}` → HttpOnly `ferromq_session` + `SessionUser`; `GET /auth/me`; `POST /auth/logout`; `POST /auth/change-password`; `POST /auth/init`
-- Roles: `admin` | `viewer` (viewer cannot kick / publish / plugin load)
-- `Authorization: Bearer <http_bearer_token>` remains an operator/admin fallback
+- Roles: `admin` (users / keys / audit + writes) | `operator` (kick / publish / plugins) | `viewer` (read-only)
+- Admin: `GET/POST /users`, `POST /users/{username}/disable|enable`, `GET/POST /api-keys`, `DELETE /api-keys/{id}`, `GET /audit`
+- `Authorization: Bearer` is the static `http_bearer_token` or a created API key secret (`fmqk_…`, shown once)
 - All `/api/v1` calls send cookies (`withCredentials` / `credentials: include`)
 - Errors: `{ code, message, details?, request_id }` plus `X-Request-Id`
 - Lists: default bare arrays; `?format=page` → `{ items, offset, limit, truncated, total? }`

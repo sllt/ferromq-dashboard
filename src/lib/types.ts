@@ -1,3 +1,5 @@
+import type { UserRole } from '@/lib/session-user'
+
 export type { AuthKind, SessionUser, UserRole } from '@/lib/session-user'
 
 export type LoginRequest = {
@@ -8,6 +10,50 @@ export type LoginRequest = {
 export type ChangePasswordRequest = {
   old_password: string
   new_password: string
+}
+
+export type DashboardUser = {
+  username: string
+  role: UserRole
+  enabled: boolean
+}
+
+export type CreateUserRequest = {
+  username: string
+  password: string
+  role: UserRole
+}
+
+export type ApiKeyInfo = {
+  id: string
+  name: string
+  role: UserRole
+  created_at: number
+  created_by: string
+  last_used_at?: number | null
+}
+
+export type ApiKeyCreated = ApiKeyInfo & {
+  secret: string
+}
+
+export type CreateApiKeyRequest = {
+  name: string
+  role?: UserRole
+}
+
+export type AuditEvent = {
+  id: number
+  ts: number
+  request_id: string
+  username: string
+  role: string
+  auth: string
+  action: string
+  resource?: string
+  ip: string
+  success: boolean
+  details?: Record<string, unknown>
 }
 
 export type ApiEndpoint = {

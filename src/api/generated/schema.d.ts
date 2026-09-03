@@ -152,6 +152,129 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List dashboard users
+         * @description Admin only. Passwords are never returned.
+         */
+        get: operations["listUsers"];
+        put?: never;
+        /**
+         * Create a dashboard user
+         * @description Admin only. Password is stored as a bcrypt hash.
+         */
+        post: operations["createUser"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/users/{username}/disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Disable a dashboard user
+         * @description Admin only. Sessions for the user are revoked. Cannot disable the last enabled admin or the current user.
+         */
+        post: operations["disableUser"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/users/{username}/enable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Re-enable a dashboard user */
+        post: operations["enableUser"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/api-keys": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List API keys
+         * @description Admin only. Secrets are never listed.
+         */
+        get: operations["listApiKeys"];
+        put?: never;
+        /**
+         * Create an API key
+         * @description Admin only. The plaintext secret (`fmqk_<id>_<random>`) is returned **once**. It is stored as SHA-256. Use `Authorization: Bearer <secret>` on `/api/v1`. Role defaults to `operator`.
+         */
+        post: operations["createApiKey"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/api-keys/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get one API key (no secret) */
+        get: operations["getApiKey"];
+        put?: never;
+        post?: never;
+        /** Revoke an API key */
+        delete: operations["deleteApiKey"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/audit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List audit events
+         * @description Admin only. Newest first. In-memory ring buffer; optional JSONL file via `audit_file`. Filters: `action`, `username`, `success`.
+         */
+        get: operations["listAudit"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/brokers": {
         parameters: {
             query?: never;
@@ -1220,14 +1343,73 @@ export interface components {
         SessionUser: {
             username: string;
             /** @enum {string} */
-            role: "admin" | "viewer";
+            role: "admin" | "operator" | "viewer";
             /** @enum {string} */
-            auth: "session" | "bearer" | "anonymous";
+            auth: "session" | "bearer" | "api_key" | "anonymous";
             /** @description Remaining idle seconds (session only) */
             expires_in?: number;
+            /** @description Present when auth=api_key */
+            key_id?: string;
             /** @description Present on POST /auth/init */
             created?: boolean;
             ok?: boolean;
+        };
+        DashboardUser: {
+            username: string;
+            /** @enum {string} */
+            role: "admin" | "operator" | "viewer";
+            enabled: boolean;
+        };
+        CreateUserRequest: {
+            username: string;
+            /** Format: password */
+            password: string;
+            /** @enum {string} */
+            role: "admin" | "operator" | "viewer";
+        };
+        ApiKey: {
+            id: string;
+            name: string;
+            /** @enum {string} */
+            role: "admin" | "operator" | "viewer";
+            /** Format: int64 */
+            created_at: number;
+            created_by: string;
+            /** Format: int64 */
+            last_used_at?: number | null;
+        };
+        ApiKeyCreated: components["schemas"]["ApiKey"] & {
+            /** @description Plaintext secret, shown only on create. Use as Bearer token. */
+            secret: string;
+        };
+        CreateApiKeyRequest: {
+            name: string;
+            /**
+             * @default operator
+             * @enum {string}
+             */
+            role: "admin" | "operator" | "viewer";
+        };
+        AuditEvent: {
+            /** Format: int64 */
+            id: number;
+            /**
+             * Format: int64
+             * @description Unix milliseconds
+             */
+            ts: number;
+            request_id: string;
+            username: string;
+            role: string;
+            /** @enum {string} */
+            auth: "session" | "bearer" | "api_key" | "anonymous";
+            action: string;
+            resource?: string;
+            ip: string;
+            success: boolean;
+            details?: {
+                [key: string]: unknown;
+            };
         };
     };
     responses: {
@@ -1251,7 +1433,7 @@ export interface components {
                 "application/json": components["schemas"]["Error"];
             };
         };
-        /** @description Authenticated but role cannot perform this write action (viewer vs admin) */
+        /** @description Authenticated but role cannot perform this action (viewer vs operator vs admin) */
         Forbidden: {
             headers: {
                 "X-Request-Id": components["headers"]["XRequestId"];
@@ -1556,6 +1738,262 @@ export interface operations {
             };
             400: components["responses"]["BadRequest"];
             409: components["responses"]["Conflict"];
+        };
+    };
+    listUsers: {
+        parameters: {
+            query?: {
+                /** @description Max rows. `0` or omitted uses plugin `max_row_limit` (default 10000). */
+                _limit?: components["parameters"]["Limit"];
+                /** @description Rows to skip after the backend fetch. */
+                _offset?: components["parameters"]["Offset"];
+                /** @description Set to `page` to wrap a list as `{ items, offset, limit, truncated, total? }` instead of a bare array. Default is the historical array body. */
+                format?: components["parameters"]["FormatPage"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description User list */
+            200: {
+                headers: {
+                    "X-Row-Count": components["headers"]["XRowCount"];
+                    "X-Truncated": components["headers"]["XTruncated"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardUser"][] | components["schemas"]["Page"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    createUser: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateUserRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardUser"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    disableUser: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                username: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardUser"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    enableUser: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                username: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardUser"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    listApiKeys: {
+        parameters: {
+            query?: {
+                /** @description Max rows. `0` or omitted uses plugin `max_row_limit` (default 10000). */
+                _limit?: components["parameters"]["Limit"];
+                /** @description Rows to skip after the backend fetch. */
+                _offset?: components["parameters"]["Offset"];
+                /** @description Set to `page` to wrap a list as `{ items, offset, limit, truncated, total? }` instead of a bare array. Default is the historical array body. */
+                format?: components["parameters"]["FormatPage"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Key metadata */
+            200: {
+                headers: {
+                    "X-Row-Count": components["headers"]["XRowCount"];
+                    "X-Truncated": components["headers"]["XTruncated"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiKey"][] | components["schemas"]["Page"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    createApiKey: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateApiKeyRequest"];
+            };
+        };
+        responses: {
+            /** @description Created; includes `secret` once */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiKeyCreated"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    getApiKey: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Key metadata */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiKey"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    deleteApiKey: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        ok?: boolean;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    listAudit: {
+        parameters: {
+            query?: {
+                /** @description Max rows. `0` or omitted uses plugin `max_row_limit` (default 10000). */
+                _limit?: components["parameters"]["Limit"];
+                /** @description Rows to skip after the backend fetch. */
+                _offset?: components["parameters"]["Offset"];
+                /** @description Set to `page` to wrap a list as `{ items, offset, limit, truncated, total? }` instead of a bare array. Default is the historical array body. */
+                format?: components["parameters"]["FormatPage"];
+                /** @description Exact action filter (login, login_failed, kick_client, publish, plugin_load, api_key_create, ...) */
+                action?: string;
+                username?: string;
+                success?: "true" | "false" | "1" | "0";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Audit events */
+            200: {
+                headers: {
+                    "X-Row-Count": components["headers"]["XRowCount"];
+                    "X-Truncated": components["headers"]["XTruncated"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditEvent"][] | components["schemas"]["Page"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
         };
     };
     getBrokers: {

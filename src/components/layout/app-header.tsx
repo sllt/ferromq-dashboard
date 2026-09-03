@@ -45,13 +45,21 @@ export function AppHeader({
     }
   }
 
-  const roleLabel = user?.role === 'viewer' ? t('auth.roleViewer') : t('auth.roleAdmin')
+  const roleLabel =
+    user?.role === 'viewer'
+      ? t('auth.roleViewer')
+      : user?.role === 'operator'
+        ? t('auth.roleOperator')
+        : t('auth.roleAdmin')
   const authLabel =
     user?.auth === 'bearer'
       ? t('auth.kindBearer')
-      : user?.auth === 'anonymous'
-        ? t('auth.kindAnonymous')
-        : t('auth.kindSession')
+      : user?.auth === 'api_key'
+        ? t('auth.kindApiKey')
+        : user?.auth === 'anonymous'
+          ? t('auth.kindAnonymous')
+          : t('auth.kindSession')
+  const roleVariant = user?.role === 'viewer' ? 'warning' : user?.role === 'operator' ? 'default' : 'success'
 
   return (
     <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-md">
@@ -108,7 +116,7 @@ export function AppHeader({
             <div className="px-2 py-1.5">
               <div className="truncate text-sm font-medium">{user?.username ?? t('app.name')}</div>
               <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                <Badge variant={user?.role === 'viewer' ? 'warning' : 'success'}>{roleLabel}</Badge>
+                <Badge variant={roleVariant}>{roleLabel}</Badge>
                 <Badge variant="secondary">{authLabel}</Badge>
               </div>
             </div>

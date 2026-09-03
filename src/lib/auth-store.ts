@@ -93,3 +93,8 @@ export function useCanWrite(): boolean {
   const user = useAuthStore((s) => s.user)
   return user != null && user.role !== 'viewer'
 }
+
+export function useCanAdmin(): boolean {
+  const user = useAuthStore((s) => s.user)
+  return user?.role === 'admin'
+}

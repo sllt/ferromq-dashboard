@@ -17,6 +17,9 @@ FerroMQ HTTP API (`/api/v1`) 的运维控制台。基于 React 19、Vite、TypeS
 | 保留消息 | `/retains`、`DELETE /retains?topic=` |
 | 发布 | `POST /mqtt/publish` |
 | 插件 | 集群 JSON `[{node, plugins:[...]}]`；`load` / `unload` / `config/reload` / `config` |
+| 用户 | `GET/POST /users`，`POST /users/{username}/disable|enable`（仅 admin） |
+| API 密钥 | `GET/POST /api-keys`，`DELETE /api-keys/{id}`；secret 仅创建时显示一次 |
+| 审计 | `GET /audit` 筛选 + 分页（仅 admin） |
 
 列表页（客户端 / 订阅 / 路由 / 保留消息 / 插件）读取 `X-Row-Count` / `X-Truncated`，支持 `_limit` / `offset`。若 Broker 支持 `?format=page`，优先使用 `{items,row_count,truncated}`，否则回退为裸数组。侧栏与操作会根据 `GET /features` 隐藏或禁用未启用的能力（如保留消息、共享订阅、会话存储）。错误体解析 `{code,message,details?,request_id?}`，toast / 页面错误展示友好文案。
 
@@ -44,7 +47,7 @@ pnpm dev
 
 ## OpenAPI 与类型生成
 
-仓库内置 `openapi/openapi.json`，来自 FerroMQ P3a（`GET /api/v1/openapi.json`，亦入库于 `ferromq-plugins/ferromq-http-api/openapi/openapi.json`，[ferromq#3](https://github.com/sllt/ferromq/pull/3)）。`pnpm build` **不依赖** 实时 Broker。
+仓库内置 `openapi/openapi.json`，来自 FerroMQ P3b（`GET /api/v1/openapi.json`，亦入库于 `ferromq-plugins/ferromq-http-api/openapi/openapi.json`，[ferromq#4](https://github.com/sllt/ferromq/pull/4)）。`pnpm build` **不依赖** 实时 Broker。
 
 ```bash
 pnpm gen:api          # 用入库 spec 生成 src/api/generated/schema.d.ts
@@ -56,7 +59,7 @@ pnpm gen:api:live     # curl localhost:6060/api/v1/openapi.json 后生成
 
 ## 登录与权限
 
-P3a 会话登录（对齐 [ferromq#3](https://github.com/sllt/ferromq/pull/3)）：
+P3a 会话登录 + P3b 管理页（对齐 [ferromq#3](https://github.com/sllt/ferromq/pull/3) / [ferromq#4](https://github.com/sllt/ferromq/pull/4)）：
 
 - 启动时 `GET /api/v1/auth/me`：`200` 进入控制台，`401` 显示登录页。
 - 主路径：`POST /api/v1/auth/login` `{ username, password }`，Broker 设置 HttpOnly Cookie `ferromq_session`。
@@ -65,8 +68,9 @@ P3a 会话登录（对齐 [ferromq#3](https://github.com/sllt/ferromq/pull/3)）
 - 高级选项可填 `http_bearer_token`，作为 operator/admin 自动化回退（`Authorization: Bearer`）。
 - `POST /auth/logout` 清除 Cookie；用户菜单可改密（仅 session 登录，`POST /auth/change-password`）。
 - `POST /auth/init` 可从 `dashboard_admin_*` 配置一次性引导管理员。
-- 角色：`admin` 可写；`viewer` 隐藏踢出 / 发布 / 插件加载卸载重载。
-- 未配置 Bearer 与 `dashboard_admin_password` 时，`/auth/me` 仍可能返回匿名 admin（开放访问）。
+- 角色：`admin`（用户 / 密钥 / 审计 + 写操作）；`operator`（踢出 / 发布 / 插件）；`viewer` 只读。
+- 侧栏「用户 / API 密钥 / 审计」仅 `admin` 可见。
+- 未配置 Bearer、API key 与 `dashboard_admin_password` 时，`/auth/me` 仍可能返回匿名 admin（开放访问）。
 
 ## 构建
 
