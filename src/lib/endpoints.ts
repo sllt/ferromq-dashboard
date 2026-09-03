@@ -32,6 +32,12 @@ import type {
   StatsSum,
   SubscriptionInfo,
   RetainItem,
+  BrokerConfigOverview,
+  BrokerConfigSection,
+  ConfigApplyMode,
+  ConfigValidateResult,
+  ConfigVersion,
+  ConfigWriteResult,
 } from '@/lib/types'
 
 export const endpoints = {
@@ -100,14 +106,40 @@ export const endpoints = {
   nodePlugins: (node: number) => apiGet<PluginInfo[]>(`/plugins/${node}`),
   plugin: (node: number, name: string) =>
     apiGet<PluginInfo>(`/plugins/${node}/${encodeURIComponent(name)}`),
-  pluginConfig: (node: number, name: string) =>
-    apiGet<unknown>(`/plugins/${node}/${encodeURIComponent(name)}/config`),
+  pluginConfig: (node: number, name: string, reveal?: boolean) =>
+    apiGet<unknown>(`/plugins/${node}/${encodeURIComponent(name)}/config`, reveal ? { reveal: '1' } : undefined),
+  pluginConfigUpdate: (node: number, name: string, body: unknown, apply: ConfigApplyMode = 'reload') =>
+    apiPut<ConfigWriteResult>(`/plugins/${node}/${encodeURIComponent(name)}/config`, body, { apply }),
+  pluginConfigValidate: (node: number, name: string, body: unknown, apply: ConfigApplyMode = 'reload') =>
+    apiPost<ConfigValidateResult>(`/plugins/${node}/${encodeURIComponent(name)}/config/validate`, body, {
+      apply,
+    }),
+  pluginConfigVersions: (node: number, name: string) =>
+    apiGet<ConfigVersion[]>(`/plugins/${node}/${encodeURIComponent(name)}/config/versions`),
+  pluginConfigRollback: (node: number, name: string, version: string, apply: ConfigApplyMode = 'reload') =>
+    apiPost<ConfigWriteResult>(
+      `/plugins/${node}/${encodeURIComponent(name)}/config/rollback/${encodeURIComponent(version)}`,
+      undefined,
+      { apply },
+    ),
   pluginReload: (node: number, name: string) =>
     apiPut<boolean>(`/plugins/${node}/${encodeURIComponent(name)}/config/reload`),
   pluginLoad: (node: number, name: string) =>
     apiPut<boolean>(`/plugins/${node}/${encodeURIComponent(name)}/load`),
   pluginUnload: (node: number, name: string) =>
     apiPut<boolean>(`/plugins/${node}/${encodeURIComponent(name)}/unload`),
+
+  brokerConfig: (reveal?: boolean) =>
+    apiGet<BrokerConfigOverview>('/broker/config', reveal ? { reveal: '1' } : undefined),
+  brokerConfigSection: (section: BrokerConfigSection, reveal?: boolean) =>
+    apiGet<Record<string, unknown>>(`/broker/config/${section}`, reveal ? { reveal: '1' } : undefined),
+  brokerConfigSectionUpdate: (section: BrokerConfigSection, body: unknown) =>
+    apiPut<ConfigWriteResult>(`/broker/config/${section}`, body),
+  brokerConfigSectionValidate: (section: BrokerConfigSection, body: unknown) =>
+    apiPost<ConfigValidateResult>(`/broker/config/${section}/validate`, body),
+  brokerConfigVersions: () => apiGet<ConfigVersion[]>('/broker/config/versions'),
+  brokerConfigRollback: (version: string) =>
+    apiPost<ConfigWriteResult>(`/broker/config/rollback/${encodeURIComponent(version)}`),
 
   stats: () => apiGet<NodeStats[]>('/stats'),
   statsSum: () => apiGet<StatsSum>('/stats/sum'),

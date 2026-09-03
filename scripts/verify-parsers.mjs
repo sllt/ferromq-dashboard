@@ -2,6 +2,15 @@
  * Contract checks for P2 list/error parsers (real modules, no HTTP mocks).
  */
 import { parseErrorBody } from '../src/lib/api-error.ts'
+import {
+  collectSecretFields,
+  countRedactedSecrets,
+  isAclPlugin,
+  isSecretKey,
+  parseConfigValidateResult,
+  parseJsonObject,
+  stripRedactedSecrets,
+} from '../src/lib/config.ts'
 import { parseListResponse } from '../src/lib/list-parse.ts'
 import { canAdmin, canWrite, parseSessionUser } from '../src/lib/session-user.ts'
 
@@ -56,6 +65,37 @@ const ops = parseSessionUser({ username: 'ops', role: 'operator', auth: 'session
 assert('operator can write but not admin', ops?.role === 'operator' && canWrite(ops) === true && canAdmin(ops) === false)
 assert('admin can admin', canAdmin({ username: 'admin', role: 'admin', auth: 'session' }) === true)
 assert('api_key auth', parseSessionUser({ username: 'ci', role: 'operator', auth: 'api_key', key_id: 'k1' })?.auth === 'api_key')
+
+assert('secret http_bearer_token', isSecretKey('http_bearer_token'))
+assert('secret jwt_key', isSecretKey('jwt_key'))
+assert('not secret http_laddr', isSecretKey('http_laddr') === false)
+assert('not secret max_sessions', isSecretKey('max_sessions') === false)
+const redacted = {
+  http_laddr: '0.0.0.0:6060',
+  http_bearer_token: '***',
+  nested: { password: '***', ok: 1 },
+}
+assert('count redacted', countRedactedSecrets(redacted) === 2)
+const stripped = stripRedactedSecrets(redacted)
+assert(
+  'strip redacted secrets',
+  stripped.http_laddr === '0.0.0.0:6060' &&
+    stripped.http_bearer_token === undefined &&
+    stripped.nested.password === undefined &&
+    stripped.nested.ok === 1,
+)
+assert('secret fields include path', collectSecretFields(redacted).some((f) => f.path === 'http_bearer_token' && f.redacted))
+assert('parse json object', parseJsonObject('{"a":1}').ok === true && parseJsonObject('[1]').ok === false)
+assert('acl plugin name', isAclPlugin('ferromq-acl') && !isAclPlugin('ferromq-http-api'))
+const vr = parseConfigValidateResult({
+  ok: true,
+  valid: true,
+  effective: 'restart_required',
+  diff: { changed: ['mqtt.max_sessions'] },
+  note: 'file only',
+})
+assert('validate result', vr?.valid === true && vr.effective === 'restart_required' && vr.diff.changed?.[0] === 'mqtt.max_sessions')
+assert('reject validate noise', parseConfigValidateResult({ message: 'bad' }) === null)
 
 if (failed) {
   console.error(`${failed} failed`)

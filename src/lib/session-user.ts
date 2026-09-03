@@ -31,12 +31,12 @@ export function parseSessionUser(data: unknown): SessionUser | null {
   }
 }
 
-/** Kick / publish / plugin load — admin and operator. */
+/** Kick / publish / plugin config write — admin and operator. */
 export function canWrite(user: SessionUser | null | undefined): boolean {
   return user != null && user.role !== 'viewer'
 }
 
-/** Users / API keys / audit — admin only. */
+/** Users / API keys / audit / broker config write / reveal secrets — admin only. */
 export function canAdmin(user: SessionUser | null | undefined): boolean {
   return user?.role === 'admin'
 }

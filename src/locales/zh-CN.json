@@ -19,7 +19,8 @@
     "admin": "管理",
     "users": "用户",
     "apikeys": "API 密钥",
-    "audit": "审计"
+    "audit": "审计",
+    "brokerConfig": "Broker 配置"
   },
   "auth": {
     "title": "登录 FerroMQ",
@@ -54,10 +55,10 @@
     "kindAnonymous": "开放访问",
     "readonlyBadge": "只读",
     "readonlyTitle": "只读账号",
-    "readonlyHint": "只读账号不能踢出客户端、发布消息或加载插件。",
+    "readonlyHint": "只读账号不能踢出客户端、发布消息、加载插件或写入配置。",
     "readonlyAction": "当前角色无法执行「{{action}}」。",
     "adminOnlyTitle": "仅管理员",
-    "adminOnlyHint": "用户、API 密钥与审计日志仅管理员可见。",
+    "adminOnlyHint": "用户、API 密钥、审计日志、Broker 配置写入与密钥明文仅管理员可用。",
     "adminOnlyPage": "只有管理员可以打开「{{page}}」。",
     "changePassword": "修改密码",
     "changePasswordHint": "更新当前会话用户的密码。新密码在 Broker 上以 bcrypt 哈希保存。",
@@ -278,7 +279,7 @@
   },
   "plugins": {
     "title": "插件",
-    "desc": "集群插件清单。支持加载、卸载、重载与查看配置。",
+    "desc": "集群插件清单。支持加载、卸载、重载，以及编辑插件配置 JSON。",
     "active": "已激活",
     "inited": "已初始化",
     "immutable": "不可变",
@@ -290,9 +291,89 @@
     "loaded": "插件已加载",
     "unloaded": "插件已卸载",
     "reloaded": "配置已重载",
-    "immutableHint": "不可变插件无法停止或改配置。",
+    "immutableHint": "不可变插件无法停止。配置仍会写入磁盘，需重启进程后生效。",
     "version": "版本",
     "authors": "作者"
+  },
+  "config": {
+    "editor": "配置",
+    "editorHint": "JSON 会写成插件 TOML 文件。密钥字段默认脱敏，仅管理员可查看明文。",
+    "pluginDesc": "节点 {{node}} · {{name}}。保存前会校验；若 API 返回 diff 会先预览。",
+    "badPlugin": "无效的插件路径",
+    "reveal": "显示密钥",
+    "revealAdminOnly": "密钥保持脱敏。只有管理员可以查看明文。",
+    "redacted": "***",
+    "noSecrets": "当前文档没有密钥字段",
+    "format": "格式化 JSON",
+    "jsonOk": "{{lines}} 行 · {{secrets}} 个密钥字段",
+    "jsonInvalid": "JSON 无效：{{error}}",
+    "jsonObject": "配置必须是 JSON 对象",
+    "validate": "校验",
+    "valid": "配置有效",
+    "invalid": "配置无效",
+    "applyMode": "写入后生效方式",
+    "applyReload": "立即应用（插件 load_config）",
+    "applyNone": "仅写文件",
+    "saved": "配置已保存",
+    "rolledBack": "已回滚",
+    "versions": "历史版本",
+    "versionsHint": "最新备份在前。回滚会恢复该文件。",
+    "noVersions": "暂无备份",
+    "rollback": "回滚",
+    "rollbackConfirm": "恢复版本 {{version}}？当前文件会先备份。",
+    "confirmTitle": "确认变更",
+    "confirmHint": "以下是 API 的预检结果。确认后才会写入文件。",
+    "saveConfirm": "写入配置",
+    "diffTitle": "差异",
+    "diffEmpty": "没有字段级差异（或 API 未返回 diff）。",
+    "diff": {
+      "added": "增",
+      "removed": "删",
+      "changed": "改"
+    },
+    "effectiveLabel": "生效方式",
+    "effective": {
+      "hot": "热更新",
+      "reload": "需重载",
+      "restart_required": "需重启"
+    },
+    "effectiveHint": {
+      "hot": "已通过插件 load_config 在当前进程生效。这不是 ferromqd 进程重启。",
+      "reload": "文件已在磁盘。调用重载（或以 apply=reload 保存）后插件才会读取。",
+      "restart_required": "文件已在磁盘。当前进程在 ferromqd 重启前不会使用新值。"
+    },
+    "strippedSecrets": "已从请求中省略 {{count}} 个仍为 *** 的密钥字段，避免把星号写回文件。",
+    "redactedSaveWarn": "密钥字段仍显示为 ***。保存时会省略它们，以免把星号写入文件。若插件完整重写必须保留这些键，请让管理员先「显示密钥」。",
+    "viewerReadonly": "当前角色可以查看配置，但不能校验、保存或回滚。",
+    "aclHint": "完整 ACL 规则编辑器属于 P5。目前请在此用原始 JSON 编辑 ACL 插件配置。"
+  },
+  "brokerConfig": {
+    "title": "Broker 配置",
+    "desc": "读取 ferromq.toml 的 mqtt / listener / log。写入只改文件，且一律需要重启进程。",
+    "file": "配置文件",
+    "sections": "可写段",
+    "editSection": "分段编辑",
+    "restartTitle": "必须重启",
+    "restartHint": "保存 mqtt、listener 或 log 不会热重启 ferromqd。新文件只在下次进程启动时生效。",
+    "readHint": "所有人可查看概览。只有管理员可以写入、回滚或显示密钥。",
+    "advancedJson": "以 JSON 编辑",
+    "listenerHint": "Listener 是嵌套表（tcp/ssl/ws）。请编辑 JSON 对象；合并时会保留未知键。",
+    "section": {
+      "mqtt": "MQTT",
+      "listener": "Listener",
+      "log": "日志"
+    },
+    "mqtt": {
+      "maxSessions": "max_sessions",
+      "delayedMax": "delayed_publish_max",
+      "delayedImmediate": "delayed_publish_immediate"
+    },
+    "log": {
+      "to": "to",
+      "level": "level",
+      "dir": "dir",
+      "file": "file"
+    }
   },
   "users": {
     "title": "用户",

@@ -19,7 +19,8 @@
     "admin": "Admin",
     "users": "Users",
     "apikeys": "API keys",
-    "audit": "Audit"
+    "audit": "Audit",
+    "brokerConfig": "Broker config"
   },
   "auth": {
     "title": "Sign in to FerroMQ",
@@ -54,10 +55,10 @@
     "kindAnonymous": "Open access",
     "readonlyBadge": "Read-only",
     "readonlyTitle": "Read-only account",
-    "readonlyHint": "Viewer accounts cannot kick clients, publish messages, or load plugins.",
+    "readonlyHint": "Viewer accounts cannot kick clients, publish messages, load plugins, or write configuration.",
     "readonlyAction": "Your role cannot {{action}}.",
     "adminOnlyTitle": "Admin only",
-    "adminOnlyHint": "Users, API keys, and the audit log are available to admin accounts.",
+    "adminOnlyHint": "Users, API keys, the audit log, broker config writes, and secret reveal are available to admin accounts.",
     "adminOnlyPage": "Only admins can open {{page}}.",
     "changePassword": "Change password",
     "changePasswordHint": "Updates the current session user. The new password is stored as a bcrypt hash on the broker.",
@@ -278,7 +279,7 @@
   },
   "plugins": {
     "title": "Plugins",
-    "desc": "Cluster plugin inventory. Load, unload, reload, and inspect config.",
+    "desc": "Cluster plugin inventory. Load, unload, reload, and edit plugin config JSON.",
     "active": "Active",
     "inited": "Inited",
     "immutable": "Immutable",
@@ -290,9 +291,89 @@
     "loaded": "Plugin loaded",
     "unloaded": "Plugin unloaded",
     "reloaded": "Config reloaded",
-    "immutableHint": "Immutable plugins cannot be stopped or reconfigured.",
+    "immutableHint": "Immutable plugins cannot be stopped. Config writes still land on disk and need a process restart.",
     "version": "Version",
     "authors": "Authors"
+  },
+  "config": {
+    "editor": "Configuration",
+    "editorHint": "JSON is written as the plugin TOML file. Secret keys stay redacted unless an admin reveals them.",
+    "pluginDesc": "Node {{node}} · {{name}}. Validate before save. Diff is shown when the API returns one.",
+    "badPlugin": "Invalid plugin path",
+    "reveal": "Reveal secrets",
+    "revealAdminOnly": "Secrets stay redacted. Only admins can reveal.",
+    "redacted": "***",
+    "noSecrets": "No secret keys in this document",
+    "format": "Format JSON",
+    "jsonOk": "{{lines}} lines · {{secrets}} secret field(s)",
+    "jsonInvalid": "Invalid JSON: {{error}}",
+    "jsonObject": "Config must be a JSON object",
+    "validate": "Validate",
+    "valid": "Config is valid",
+    "invalid": "Config is not valid",
+    "applyMode": "Apply after write",
+    "applyReload": "Apply now (plugin load_config)",
+    "applyNone": "Write file only",
+    "saved": "Configuration saved",
+    "rolledBack": "Rolled back",
+    "versions": "Versions",
+    "versionsHint": "Newest backups first. Rollback restores the file.",
+    "noVersions": "No backups yet",
+    "rollback": "Rollback",
+    "rollbackConfirm": "Restore version {{version}}? The current file is backed up first.",
+    "confirmTitle": "Review changes",
+    "confirmHint": "The API returned this dry-run result. Confirm to write the file.",
+    "saveConfirm": "Write config",
+    "diffTitle": "Diff",
+    "diffEmpty": "No field-level diff (or the API omitted one).",
+    "diff": {
+      "added": "add",
+      "removed": "del",
+      "changed": "chg"
+    },
+    "effectiveLabel": "Effective",
+    "effective": {
+      "hot": "hot",
+      "reload": "reload",
+      "restart_required": "restart required"
+    },
+    "effectiveHint": {
+      "hot": "Already applied in this process via the plugin load_config hook. This is not a ferromqd restart.",
+      "reload": "File is on disk. Call reload (or save with apply=reload) so the plugin picks it up.",
+      "restart_required": "File is on disk. The running process will not use it until ferromqd restarts."
+    },
+    "strippedSecrets": "Omitted {{count}} redacted secret field(s) from the payload so they are not written as ***.",
+    "redactedSaveWarn": "Secret fields still show ***. They are stripped on save so the file is not overwritten with stars. Ask an admin to Reveal if this plugin must keep those keys in a full rewrite.",
+    "viewerReadonly": "Your role can read this config but cannot validate, save, or roll back.",
+    "aclHint": "A dedicated ACL rule builder is planned for P5. Until then, edit the ACL plugin as raw JSON here."
+  },
+  "brokerConfig": {
+    "title": "Broker config",
+    "desc": "Read ferromq.toml mqtt / listener / log. Writes update the file only and always require a process restart.",
+    "file": "Config file",
+    "sections": "Writable sections",
+    "editSection": "Section editor",
+    "restartTitle": "Restart required",
+    "restartHint": "Saving mqtt, listener, or log never hot-restarts ferromqd. The new file is used on the next process start.",
+    "readHint": "Everyone can read this overview. Only admins can write sections, roll back, or reveal secrets.",
+    "advancedJson": "Edit as JSON",
+    "listenerHint": "Listener tables are nested (tcp/ssl/ws). Edit the JSON object; unknown keys are kept on merge.",
+    "section": {
+      "mqtt": "MQTT",
+      "listener": "Listener",
+      "log": "Log"
+    },
+    "mqtt": {
+      "maxSessions": "max_sessions",
+      "delayedMax": "delayed_publish_max",
+      "delayedImmediate": "delayed_publish_immediate"
+    },
+    "log": {
+      "to": "to",
+      "level": "level",
+      "dir": "dir",
+      "file": "file"
+    }
   },
   "users": {
     "title": "Users",

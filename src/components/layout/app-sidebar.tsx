@@ -11,6 +11,7 @@ import {
   Route as RouteIcon,
   ScrollText,
   Send,
+  Settings2,
   UserCog,
   Users,
 } from 'lucide-react'
@@ -56,7 +57,10 @@ const groups: NavGroup[] = [
   },
   {
     titleKey: 'nav.cluster',
-    items: [{ to: '/plugins', labelKey: 'nav.plugins', icon: Plug }],
+    items: [
+      { to: '/plugins', labelKey: 'nav.plugins', icon: Plug },
+      { to: '/broker-config', labelKey: 'nav.brokerConfig', icon: Settings2 },
+    ],
   },
   {
     titleKey: 'nav.admin',
