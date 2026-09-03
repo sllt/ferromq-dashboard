@@ -4,6 +4,7 @@ import { apiGetList, type ListQuery } from '@/lib/list'
 import type {
   ApiEndpoint,
   BrokerInfo,
+  ChangePasswordRequest,
   ClientInfo,
   ClientQuery,
   FeaturesResponse,
@@ -12,6 +13,7 @@ import type {
   HistoryCluster,
   HistoryQuery,
   HistorySum,
+  LoginRequest,
   NodeHealth,
   NodeInfo,
   NodeMetrics,
@@ -20,12 +22,19 @@ import type {
   PluginInfo,
   PublishRequest,
   RouteInfo,
+  SessionUser,
   StatsSum,
   SubscriptionInfo,
   RetainItem,
 } from '@/lib/types'
 
 export const endpoints = {
+  login: (body: LoginRequest) => apiPost<SessionUser>('/auth/login', body),
+  logout: () => apiPost<SessionUser>('/auth/logout'),
+  me: () => apiGet<SessionUser>('/auth/me'),
+  changePassword: (body: ChangePasswordRequest) => apiPost<SessionUser>('/auth/change-password', body),
+  init: () => apiPost<SessionUser>('/auth/init'),
+
   listApis: () => apiGet<ApiEndpoint[]>('/'),
   openapi: () => apiGet<Record<string, unknown>>('/openapi.json'),
   brokers: async (node?: number) => {

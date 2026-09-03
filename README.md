@@ -8,7 +8,7 @@ FerroMQ HTTP API (`/api/v1`) 的运维控制台。基于 React 19、Vite、TypeS
 
 | 页面 | API |
 | --- | --- |
-| 登录 | `GET /api/v1` 校验 Bearer Token |
+| 登录 | `POST /auth/login` 用户名/密码 → HttpOnly `ferromq_session`；启动时 `GET /auth/me`；可选 Bearer 回退 |
 | 总览 | `/stats` `/stats/sum` `/metrics` `/metrics/sum`，以及可用时的 `/stats/history/sum` `/metrics/history/sum`；`/nodes` `/brokers` |
 | 节点 | `/nodes` `/brokers` `/health/check` `/features` |
 | 客户端 | `/clients`、详情、`DELETE /clients/{id}`、离线列表与批量踢出 |
@@ -44,7 +44,7 @@ pnpm dev
 
 ## OpenAPI 与类型生成
 
-仓库内置 `openapi/openapi.json`，来自 FerroMQ P2（`GET /api/v1/openapi.json`，亦入库于 `ferromq-plugins/ferromq-http-api/openapi/openapi.json`）。`pnpm build` **不依赖** 实时 Broker。
+仓库内置 `openapi/openapi.json`，来自 FerroMQ P3a（`GET /api/v1/openapi.json`，亦入库于 `ferromq-plugins/ferromq-http-api/openapi/openapi.json`，[ferromq#3](https://github.com/sllt/ferromq/pull/3)）。`pnpm build` **不依赖** 实时 Broker。
 
 ```bash
 pnpm gen:api          # 用入库 spec 生成 src/api/generated/schema.d.ts
@@ -54,14 +54,19 @@ pnpm gen:api:live     # curl localhost:6060/api/v1/openapi.json 后生成
 
 详见 [openapi/README.md](./openapi/README.md)。
 
-## 登录
+## 登录与权限
 
-填写 `plugins/ferromq-http-api.toml` 中的 `http_bearer_token`。
+P3a 会话登录（对齐 [ferromq#3](https://github.com/sllt/ferromq/pull/3)）：
 
-- Token 保存在内存 + `sessionStorage`（键名 `ferromq_http_bearer_token`）。
-- 请求拦截器自动加 `Authorization: Bearer <token>`。
-- `401` 会清空会话并回到登录页。
-- Broker 未开启鉴权时可留空后连接。
+- 启动时 `GET /api/v1/auth/me`：`200` 进入控制台，`401` 显示登录页。
+- 主路径：`POST /api/v1/auth/login` `{ username, password }`，Broker 设置 HttpOnly Cookie `ferromq_session`。
+- 浏览器**不存储密码**。会话只在 Cookie 中；页面只缓存 `{ username, role, auth }`。
+- 所有 `/api/v1` 请求使用 `withCredentials: true` / `credentials: 'include'`。
+- 高级选项可填 `http_bearer_token`，作为 operator/admin 自动化回退（`Authorization: Bearer`）。
+- `POST /auth/logout` 清除 Cookie；用户菜单可改密（仅 session 登录，`POST /auth/change-password`）。
+- `POST /auth/init` 可从 `dashboard_admin_*` 配置一次性引导管理员。
+- 角色：`admin` 可写；`viewer` 隐藏踢出 / 发布 / 插件加载卸载重载。
+- 未配置 Bearer 与 `dashboard_admin_password` 时，`/auth/me` 仍可能返回匿名 admin（开放访问）。
 
 ## 构建
 

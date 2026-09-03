@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { toastApiError } from '@/lib/api'
+import { useCanWrite } from '@/lib/auth-store'
 import { partitionCluster } from '@/lib/cluster'
 import { endpoints } from '@/lib/endpoints'
 import type { NodePlugins, PluginInfo } from '@/lib/types'
@@ -18,6 +19,7 @@ type Row = PluginInfo & { node: number }
 
 export function PluginsPage() {
   const { t } = useTranslation()
+  const canWrite = useCanWrite()
   const qc = useQueryClient()
   const [config, setConfig] = useState<{ node: number; name: string; json: unknown } | null>(null)
 
@@ -94,30 +96,34 @@ export function PluginsPage() {
           const locked = p.immutable
           return (
             <div className="flex flex-wrap gap-1.5">
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={locked || p.active}
-                onClick={() => loadMut.mutate({ node: p.node, name: p.name })}
-              >
-                {t('plugins.load')}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={locked || !p.active}
-                onClick={() => unloadMut.mutate({ node: p.node, name: p.name })}
-              >
-                {t('plugins.unload')}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={locked}
-                onClick={() => reloadMut.mutate({ node: p.node, name: p.name })}
-              >
-                {t('plugins.reload')}
-              </Button>
+              {canWrite ? (
+                <>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={locked || p.active}
+                    onClick={() => loadMut.mutate({ node: p.node, name: p.name })}
+                  >
+                    {t('plugins.load')}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={locked || !p.active}
+                    onClick={() => unloadMut.mutate({ node: p.node, name: p.name })}
+                  >
+                    {t('plugins.unload')}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={locked}
+                    onClick={() => reloadMut.mutate({ node: p.node, name: p.name })}
+                  >
+                    {t('plugins.reload')}
+                  </Button>
+                </>
+              ) : null}
               <Button
                 size="sm"
                 variant="secondary"
@@ -137,7 +143,7 @@ export function PluginsPage() {
         },
       },
     ],
-    [t, loadMut, unloadMut, reloadMut],
+    [t, canWrite, loadMut, unloadMut, reloadMut],
   )
 
   return (

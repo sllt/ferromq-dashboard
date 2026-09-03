@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { useCanWrite } from '@/lib/auth-store'
 import { useClusterFeatures, type FeatureKey } from '@/lib/features'
 
 type NavItem = {
@@ -23,6 +24,7 @@ type NavItem = {
   labelKey: string
   icon: React.ComponentType<{ className?: string }>
   feature?: FeatureKey
+  write?: boolean
 }
 
 type NavGroup = {
@@ -45,7 +47,7 @@ const groups: NavGroup[] = [
       { to: '/subscriptions', labelKey: 'nav.subscriptions', icon: Radio },
       { to: '/routes', labelKey: 'nav.routes', icon: RouteIcon },
       { to: '/retains', labelKey: 'nav.retains', icon: Layers, feature: 'retain' },
-      { to: '/publish', labelKey: 'nav.publish', icon: Send },
+      { to: '/publish', labelKey: 'nav.publish', icon: Send, write: true },
     ],
   },
   {
@@ -58,6 +60,7 @@ export function AppSidebar({ collapsed }: { collapsed: boolean }) {
   const { t } = useTranslation()
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const features = useClusterFeatures()
+  const canWrite = useCanWrite()
 
   return (
     <aside
@@ -91,6 +94,7 @@ export function AppSidebar({ collapsed }: { collapsed: boolean }) {
                 {group.items.map((item) => {
                   const active = item.to === '/' ? pathname === '/' : pathname.startsWith(item.to)
                   const Icon = item.icon
+                  if (item.write && !canWrite) return null
                   const gated = item.feature && !features.isLoading && !features.isError && !features.has(item.feature)
                   if (gated) {
                     const label = (

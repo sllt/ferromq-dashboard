@@ -1,0 +1,76 @@
+import { ApiError } from '@/lib/api'
+import { useAuthStore } from '@/lib/auth-store'
+import { endpoints } from '@/lib/endpoints'
+import { parseSessionUser, type SessionUser } from '@/lib/session-user'
+
+let inflight: Promise<void> | null = null
+
+export async function ensureSession(): Promise<void> {
+  if (useAuthStore.getState().hydrated) return
+  if (inflight) return inflight
+  inflight = hydrate()
+  try {
+    await inflight
+  } finally {
+    inflight = null
+  }
+}
+
+async function hydrate() {
+  try {
+    const user = parseSessionUser(await endpoints.me())
+    if (user) useAuthStore.getState().applySession(user)
+    else useAuthStore.getState().clearLocal()
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 401) {
+      useAuthStore.getState().clearLocal()
+      return
+    }
+    useAuthStore.getState().markHydrated()
+  }
+}
+
+function requireUser(raw: unknown): SessionUser {
+  const user = parseSessionUser(raw)
+  if (!user) throw new Error('Invalid session payload')
+  return user
+}
+
+export async function loginWithPassword(username: string, password: string): Promise<SessionUser> {
+  const user = requireUser(await endpoints.login({ username, password }))
+  useAuthStore.getState().applySession(user, null)
+  return user
+}
+
+export async function loginWithBearer(token: string): Promise<SessionUser> {
+  useAuthStore.getState().setBearerToken(token)
+  try {
+    const user = requireUser(await endpoints.me())
+    useAuthStore.getState().applySession(user, token)
+    return user
+  } catch (err) {
+    useAuthStore.getState().clearLocal()
+    throw err
+  }
+}
+
+export async function logoutSession(): Promise<void> {
+  try {
+    await endpoints.logout()
+  } catch {
+    // Cookie may already be gone; still drop local identity / bearer.
+  }
+  useAuthStore.getState().clearLocal()
+}
+
+export async function changePassword(oldPassword: string, newPassword: string): Promise<SessionUser> {
+  const user = requireUser(
+    await endpoints.changePassword({ old_password: oldPassword, new_password: newPassword }),
+  )
+  useAuthStore.getState().applySession(user)
+  return user
+}
+
+export async function initAdminFromConfig(): Promise<SessionUser> {
+  return requireUser(await endpoints.init())
+}

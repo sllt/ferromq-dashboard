@@ -24,6 +24,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { toastApiError } from '@/lib/api'
+import { useCanWrite } from '@/lib/auth-store'
 import { endpoints } from '@/lib/endpoints'
 import { useClusterFeatures } from '@/lib/features'
 import { DEFAULT_PAGE_SIZE, pagingParams } from '@/lib/list'
@@ -34,6 +35,7 @@ type Filters = Omit<ClientQuery, '_limit' | 'limit' | 'offset' | '_offset'>
 export function ClientsPage() {
   const { t } = useTranslation()
   const qc = useQueryClient()
+  const canWrite = useCanWrite()
   const features = useClusterFeatures()
   const sessionStore = features.has('session_storage')
   const [tab, setTab] = useState<'all' | 'offline'>('all')
@@ -69,8 +71,8 @@ export function ClientsPage() {
     onError: toastApiError,
   })
 
-  const columns = useMemo<ColumnDef<ClientInfo>[]>(
-    () => [
+  const columns = useMemo<ColumnDef<ClientInfo>[]>(() => {
+    const cols: ColumnDef<ClientInfo>[] = [
       {
         accessorKey: 'clientid',
         header: t('common.client'),
@@ -100,7 +102,9 @@ export function ClientsPage() {
       { accessorKey: 'subscriptions_cnt', header: t('clients.subs') },
       { accessorKey: 'mqueue_len', header: t('clients.mqueue') },
       { accessorKey: 'connected_at', header: t('clients.connected') },
-      {
+    ]
+    if (canWrite) {
+      cols.push({
         id: 'actions',
         header: t('common.actions'),
         cell: ({ row }) => (
@@ -108,10 +112,10 @@ export function ClientsPage() {
             {t('clients.kick')}
           </Button>
         ),
-      },
-    ],
-    [t],
-  )
+      })
+    }
+    return cols
+  }, [t, canWrite])
 
   function applyFilters() {
     setFilters(draft)
@@ -128,7 +132,7 @@ export function ClientsPage() {
             <Button size="sm" variant="outline" onClick={() => void listQ.refetch()}>
               {t('common.refresh')}
             </Button>
-            {tab === 'offline' ? (
+            {tab === 'offline' && canWrite ? (
               <Button size="sm" variant="destructive" onClick={() => setKickOff(true)} disabled={!sessionStore}>
                 {t('clients.kickOfflines')}
               </Button>

@@ -1,4 +1,4 @@
-import axios, { AxiosError, type AxiosResponse } from 'axios'
+import axios, { AxiosError, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios'
 import { toast } from 'sonner'
 import { parseErrorBody, type ApiErrorBody } from '@/lib/api-error'
 import i18n from '@/lib/i18n'
@@ -7,6 +7,12 @@ import { compactParams } from '@/lib/utils'
 
 export type { ApiErrorBody }
 export { parseErrorBody }
+
+declare module 'axios' {
+  interface AxiosRequestConfig {
+    skipAuthRedirect?: boolean
+  }
+}
 
 export class ApiError extends Error {
   status: number
@@ -39,22 +45,33 @@ export class ApiError extends Error {
 export const api = axios.create({
   baseURL: '/api/v1',
   timeout: 20_000,
+  withCredentials: true,
   validateStatus: () => true,
 })
+
+function isAuthPath(url: string | undefined): boolean {
+  if (!url) return false
+  return /(?:^|\/)auth\/(me|login|logout|init|change-password)(?:\?|$)/.test(url)
+}
 
 api.interceptors.request.use((config) => {
   const token = getAuthToken()
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
+  config.withCredentials = true
   return config
 })
 
 api.interceptors.response.use((response) => {
   if (response.status === 401) {
-    clearAuthSession()
-    if (!window.location.hash.includes('/login')) {
-      window.location.hash = '#/login'
+    const cfg = response.config as InternalAxiosRequestConfig
+    const skip = cfg.skipAuthRedirect === true || isAuthPath(cfg.url)
+    if (!skip) {
+      clearAuthSession()
+      if (!window.location.hash.includes('/login')) {
+        window.location.hash = '#/login'
+      }
     }
     throw toApiError(response)
   }
@@ -97,6 +114,7 @@ function statusKey(status: number): string {
   if (status === 403) return 'errors.forbidden'
   if (status === 404) return 'errors.notFound'
   if (status === 409) return 'errors.conflict'
+  if (status === 429) return 'errors.tooManyRequests'
   if (status === 503 || status === 502) return 'errors.unavailable'
   return 'errors.generic'
 }

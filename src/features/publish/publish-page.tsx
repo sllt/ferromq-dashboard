@@ -11,13 +11,16 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
+import { WriteUnavailable } from '@/components/write-gate'
 import { toastApiError } from '@/lib/api'
+import { useCanWrite } from '@/lib/auth-store'
 import { endpoints } from '@/lib/endpoints'
 import { useClusterFeatures } from '@/lib/features'
 import type { PublishRequest } from '@/lib/types'
 
 export function PublishPage() {
   const { t } = useTranslation()
+  const canWrite = useCanWrite()
   const features = useClusterFeatures()
   const canRetain = features.has('retain')
   const [topic, setTopic] = useState('')
@@ -56,6 +59,15 @@ export function PublishPage() {
     if (responseTopic.trim()) properties.response_topic = responseTopic.trim()
     if (Object.keys(properties).length) body.properties = properties
     mut.mutate(body)
+  }
+
+  if (!canWrite) {
+    return (
+      <div>
+        <PageHeader title={t('publish.title')} description={t('publish.desc')} />
+        <WriteUnavailable action={t('nav.publish')} />
+      </div>
+    )
   }
 
   return (
