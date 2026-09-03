@@ -32,6 +32,9 @@ const ACTIONS = [
   'user_create',
   'user_disable',
   'user_enable',
+  'alarm_acknowledge',
+  'cluster_join',
+  'cluster_leave',
 ] as const
 
 type Filters = {

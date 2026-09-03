@@ -1585,6 +1585,195 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/alarms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Current derived alarms
+         * @description In-memory bus refreshed from health, features, and node reachability. available=true means the bus exists, not that FerroMQ has a native alarm plugin.
+         */
+        get: operations["listAlarms"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/alarms/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Cleared alarms (process memory) */
+        get: operations["listAlarmHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/alarms/{id}/acknowledge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Acknowledge a current alarm (operator+) */
+        post: operations["acknowledgeAlarm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/logs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Log query availability (gap)
+         * @description No log collector. Returns available=false and points at GET /broker/config/log.
+         */
+        get: operations["getLogs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/trace": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Packet-trace availability (gap) */
+        get: operations["getTrace"];
+        put?: never;
+        /** Not implemented (no plugin) */
+        post: operations["startTrace"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/slow-subs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Slow-subscription availability (gap) */
+        get: operations["getSlowSubs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/topic-metrics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Route-derived subscriber counts
+         * @description available=true with kind=route_derived. Per-topic publish/deliver rates are not collected. $SYS topics are listed only when ferromq-sys-topic is loaded.
+         */
+        get: operations["getTopicMetrics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cluster": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read-only cluster topology
+         * @description mode is standalone | raft | broadcast. membership.join/leave say whether write APIs exist. GET /brokers and GET /nodes also include an additive cluster object.
+         */
+        get: operations["getCluster"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cluster/join": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Runtime join is not supported
+         * @description Always 501. Raft::join is consumed at ferromq-cluster-raft init from raft_peer_addrs. Response details.nodes is a per-node result array.
+         */
+        post: operations["clusterJoin"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cluster/leave": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Leave when ferromq-cluster-raft is active
+         * @description Calls Plugin::send({op:leave}) → Mailbox::leave on the local node. Otherwise 501. Always returns per-node results.
+         */
+        post: operations["clusterLeave"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1921,6 +2110,85 @@ export interface components {
             latency_ms?: number;
             error?: string | null;
             note?: string;
+        };
+        CapabilityGap: {
+            /** @enum {boolean} */
+            available: false;
+            plugin?: unknown;
+            kind?: string;
+            items: unknown[];
+            gap: string;
+            alternatives?: unknown[];
+        };
+        Alarm: {
+            id: string;
+            name: string;
+            /** @enum {string} */
+            level: "critical" | "warning";
+            /** Format: int64 */
+            node_id?: number | null;
+            message: string;
+            /** @enum {string} */
+            source: "health" | "features" | "cluster";
+            /** Format: int64 */
+            activated_at: number;
+            acknowledged: boolean;
+            /** Format: int64 */
+            acknowledged_at?: number;
+            acknowledged_by?: string;
+            /** Format: int64 */
+            cleared_at?: number;
+        };
+        AlarmList: {
+            available: boolean;
+            /** @enum {string} */
+            source: "derived";
+            note?: string;
+            items: components["schemas"]["Alarm"][];
+        };
+        TopicMetrics: {
+            available: boolean;
+            /** @enum {string} */
+            kind: "route_derived";
+            note?: string;
+            sys_topic?: Record<string, never>;
+            alternatives?: unknown[];
+            items: unknown[];
+            offset?: number;
+            limit?: number;
+            truncated?: boolean;
+        };
+        ClusterTopology: {
+            available: boolean;
+            /** @enum {string} */
+            mode: "standalone" | "raft" | "broadcast";
+            plugin?: string | null;
+            plugin_active?: boolean;
+            /** Format: int64 */
+            local_node_id: number;
+            /** Format: int64 */
+            leader_id?: number | null;
+            role?: string;
+            peers?: number[];
+            nodes: unknown[];
+            membership: {
+                join?: boolean;
+                leave?: boolean;
+                reason?: string;
+            };
+            /** @description Plugin::send({op:status}) payload when raft is active */
+            raft?: unknown;
+            note?: string;
+        };
+        /** @description Cluster membership write. Always includes a per-node result array. On 501 the same shape is in Error.details. */
+        ClusterWriteResult: {
+            ok?: boolean;
+            /** @enum {string} */
+            action?: "join" | "leave";
+            available?: boolean;
+            message?: string;
+            membership?: Record<string, never>;
+            nodes?: components["schemas"]["ClusterNodeError"][];
         };
         BlacklistGap: {
             available: boolean;
@@ -4930,6 +5198,237 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    listAlarms: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Alarm list */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlarmList"];
+                };
+            };
+        };
+    };
+    listAlarmHistory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description History */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlarmList"];
+                };
+            };
+        };
+    };
+    acknowledgeAlarm: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Acknowledged */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    getLogs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Gap document */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CapabilityGap"];
+                };
+            };
+        };
+    };
+    getTrace: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Gap document */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CapabilityGap"];
+                };
+            };
+        };
+    };
+    startTrace: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No trace plugin; details.nodes not used (local gap) */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getSlowSubs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Gap document */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CapabilityGap"];
+                };
+            };
+        };
+    };
+    getTopicMetrics: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Topic metrics */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TopicMetrics"];
+                };
+            };
+        };
+    };
+    getCluster: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Topology */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClusterTopology"];
+                };
+            };
+        };
+    };
+    clusterJoin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            403: components["responses"]["Forbidden"];
+            /** @description Not implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClusterWriteResult"];
+                };
+            };
+        };
+    };
+    clusterLeave: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Per-node leave result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClusterWriteResult"];
+                };
+            };
+            403: components["responses"]["Forbidden"];
+            /** @description No runtime leave API */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClusterWriteResult"];
+                };
             };
         };
     };

@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import { Cable, Layers, Route as RouteIcon, Radio, Server, Users } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
+import { Cable, Layers, Route as RouteIcon, Radio, Server, Share2, Users } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -54,6 +55,7 @@ export function OverviewPage() {
   const metricsQ = useQuery({ queryKey: ['metrics-sum'], queryFn: endpoints.metricsSum, refetchInterval: 8000 })
   const nodesQ = useQuery({ queryKey: ['nodes'], queryFn: () => endpoints.nodes(), refetchInterval: 8000 })
   const brokersQ = useQuery({ queryKey: ['brokers'], queryFn: () => endpoints.brokers(), refetchInterval: 15000 })
+  const clusterQ = useQuery({ queryKey: ['cluster'], queryFn: endpoints.cluster, refetchInterval: 15000, retry: false })
   const histQ = useQuery({
     queryKey: ['stats-history-sum', range.key],
     queryFn: () => endpoints.statsHistorySum(range),
@@ -184,6 +186,36 @@ export function OverviewPage() {
         />
       </div>
 
+      {clusterQ.data?.available !== false && clusterQ.data?.mode ? (
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <Share2 className="size-4 text-primary" />
+                {t('overview.clusterMode')}
+              </span>
+              <Button asChild size="sm" variant="outline">
+                <Link to="/cluster">{t('overview.openCluster')}</Link>
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-wrap items-center gap-2 text-sm">
+            <Badge variant={clusterQ.data.mode === 'raft' ? 'success' : 'secondary'}>
+              {clusterQ.data.mode}
+            </Badge>
+            {clusterQ.data.role ? <Badge variant="outline">{clusterQ.data.role}</Badge> : null}
+            {clusterQ.data.leader_id != null ? (
+              <span className="text-xs text-muted-foreground">
+                {t('nodes.leader')} {clusterQ.data.leader_id}
+              </span>
+            ) : null}
+            {clusterQ.data.plugin ? (
+              <span className="font-mono text-xs text-muted-foreground">{clusterQ.data.plugin}</span>
+            ) : null}
+          </CardContent>
+        </Card>
+      ) : null}
+
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
@@ -204,6 +236,8 @@ export function OverviewPage() {
                   <div className="font-mono text-sm">{n.node_name}</div>
                   <div className="text-xs text-muted-foreground">
                     {n.version} · {n.uptime}
+                    {n.cluster?.mode ? ` · ${n.cluster.mode}` : ''}
+                    {n.cluster?.role ? ` · ${n.cluster.role}` : ''}
                   </div>
                 </div>
                 <Badge variant={n.running ? 'success' : 'destructive'}>

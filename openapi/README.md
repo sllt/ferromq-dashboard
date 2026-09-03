@@ -2,9 +2,9 @@
 
 Vendored copy of the broker spec used by `pnpm gen:api`.
 
-Upstream (dashboard/P5):
+Upstream (dashboard/P6):
 `ferromq-plugins/ferromq-http-api/openapi/openapi.json`
-on branch `dashboard/p5-acl-integrations` ([ferromq#6](https://github.com/sllt/ferromq/pull/6)).
+on branch `dashboard/p6-diagnostics-cluster` ([ferromq#7](https://github.com/sllt/ferromq/pull/7)).
 
 Live broker:
 
@@ -18,7 +18,7 @@ Live broker:
 pnpm gen:api:live
 
 # or copy the checked-in broker file
-# curl -sfL https://raw.githubusercontent.com/sllt/ferromq/dashboard/p5-acl-integrations/ferromq-plugins/ferromq-http-api/openapi/openapi.json -o openapi/openapi.json
+# curl -sfL https://raw.githubusercontent.com/sllt/ferromq/dashboard/p6-diagnostics-cluster/ferromq-plugins/ferromq-http-api/openapi/openapi.json -o openapi/openapi.json
 pnpm gen:api
 ```
 
@@ -33,6 +33,7 @@ This vendored copy keeps Bearer + `ferromq_session` cookie as one `securitySchem
 - Admin: `GET/POST /users`, `POST /users/{username}/disable|enable`, `GET/POST /api-keys`, `DELETE /api-keys/{id}`, `GET /audit`, `PUT /broker/config/{section}`, `?reveal=1`, `allow_private=1`
 - Config: `GET/PUT /plugins/{node}/{plugin}/config`, `POST .../validate`, `GET .../versions`, `POST .../rollback/{version}`; `GET /broker/config`, `GET/PUT /broker/config/{mqtt|listener|log}`
 - P5: `/acl` `/acl/rules`, `/auth-providers/{http|jwt}` + `/test`, `/blacklist` (`available: false`), `/auto-subscriptions`, `/topic-rewrites`, `/webhooks` (+ `/test` TCP stub), `/bridges` + load/unload
+- P6: `/alarms` (+ `/history`, acknowledge), `/logs` `/trace` `/slow-subs` (gaps), `/topic-metrics` (`kind=route_derived`), `/cluster` (read-only) + `/cluster/join` (always 501) + `/cluster/leave` (raft only)
 - `Authorization: Bearer` is the static `http_bearer_token` or a created API key secret (`fmqk_…`, shown once)
 - All `/api/v1` calls send cookies (`withCredentials` / `credentials: include`)
 - Errors: `{ code, message, details?, request_id }` plus `X-Request-Id`

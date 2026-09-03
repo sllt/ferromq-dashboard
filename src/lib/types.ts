@@ -63,6 +63,15 @@ export type ApiEndpoint = {
   descr: string
 }
 
+export type NodeClusterInfo = {
+  mode?: string
+  plugin?: string | null
+  plugin_active?: boolean
+  leader_id?: number | null
+  role?: string
+  peers?: number[]
+}
+
 export type BrokerInfo = {
   ok?: boolean
   datetime?: string
@@ -73,6 +82,7 @@ export type BrokerInfo = {
   uptime?: string
   version?: string
   rustc_version?: string
+  cluster?: NodeClusterInfo
 }
 
 export type NodeInfo = {
@@ -93,6 +103,7 @@ export type NodeInfo = {
   uptime?: string
   version?: string
   rustc_version?: string
+  cluster?: NodeClusterInfo
 }
 
 export type FeatureFlags = {
@@ -601,6 +612,127 @@ export type BridgeToggleResult = {
 export const ACL_CONTROLS: AclControl[] = ['all', 'connect', 'publish', 'subscribe', 'pubsub']
 
 export const REWRITE_ACTIONS = ['all', 'publish', 'subscribe'] as const
+
+export type AlarmLevel = 'critical' | 'warning'
+export type AlarmSource = 'health' | 'features' | 'cluster'
+
+export type Alarm = {
+  id: string
+  name: string
+  level: string
+  node_id?: number | null
+  message: string
+  source: string
+  activated_at: number
+  acknowledged: boolean
+  acknowledged_at?: number | null
+  acknowledged_by?: string | null
+  cleared_at?: number | null
+}
+
+export type AlarmList = {
+  available: boolean
+  source?: string
+  note?: string
+  items: Alarm[]
+  offset?: number
+  limit?: number
+  truncated?: boolean
+  total?: number
+}
+
+export type AlarmAckResult = {
+  ok?: boolean
+  alarm?: Alarm
+}
+
+export type CapabilityAlternative = {
+  api?: string
+  plugin?: string
+  how?: string
+}
+
+export type CapabilityGap = {
+  available: boolean
+  plugin?: string | null
+  kind?: string
+  items?: unknown[]
+  gap?: string
+  alternatives?: CapabilityAlternative[]
+}
+
+export type TopicMetricItem = {
+  topic: string
+  subscribers: number
+  node_ids?: number[]
+}
+
+export type SysTopicInfo = {
+  plugin?: string
+  loaded?: boolean
+  active?: boolean
+  topics?: string[]
+}
+
+export type TopicMetrics = {
+  available: boolean
+  kind?: string
+  note?: string
+  sys_topic?: SysTopicInfo
+  alternatives?: CapabilityAlternative[]
+  items: TopicMetricItem[]
+  offset?: number
+  limit?: number
+  truncated?: boolean
+}
+
+export type ClusterMode = 'standalone' | 'raft' | 'broadcast'
+
+export type ClusterMembership = {
+  join?: boolean
+  leave?: boolean
+  reason?: string
+}
+
+export type ClusterMember = {
+  ok?: boolean
+  node_id: number
+  role?: string
+  reachable?: boolean
+  leader?: boolean
+  error?: string
+}
+
+export type ClusterTopology = {
+  available: boolean
+  mode: string
+  plugin?: string | null
+  plugin_active?: boolean
+  local_node_id: number
+  leader_id?: number | null
+  role?: string
+  peers?: number[]
+  nodes?: ClusterMember[]
+  membership?: ClusterMembership
+  raft?: unknown
+  note?: string
+}
+
+export type ClusterWriteNode = {
+  ok?: boolean
+  node_id?: number
+  error?: string
+  result?: unknown
+}
+
+export type ClusterWriteResult = {
+  ok?: boolean
+  action?: string
+  available?: boolean
+  message?: string
+  membership?: ClusterMembership
+  nodes?: ClusterWriteNode[]
+}
 
 export const WEBHOOK_HOOKS = [
   'session_created',
