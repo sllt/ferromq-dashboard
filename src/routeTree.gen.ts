@@ -14,8 +14,8 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedApiKeysRouteImport } from './routes/_authenticated/api-keys'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
+import { Route as AuthenticatedBrokerConfigRouteImport } from './routes/_authenticated/broker-config'
 import { Route as AuthenticatedNodesRouteImport } from './routes/_authenticated/nodes'
-import { Route as AuthenticatedPluginsRouteImport } from './routes/_authenticated/plugins'
 import { Route as AuthenticatedPublishRouteImport } from './routes/_authenticated/publish'
 import { Route as AuthenticatedRetainsRouteImport } from './routes/_authenticated/retains'
 import { Route as AuthenticatedRoutesRouteImport } from './routes/_authenticated/routes'
@@ -23,6 +23,8 @@ import { Route as AuthenticatedSubscriptionsRouteImport } from './routes/_authen
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients/index'
 import { Route as AuthenticatedClientsClientIdRouteImport } from './routes/_authenticated/clients/$clientId'
+import { Route as AuthenticatedPluginsIndexRouteImport } from './routes/_authenticated/plugins/index'
+import { Route as AuthenticatedPluginsNodeIdPluginRouteImport } from './routes/_authenticated/plugins/$nodeId/$plugin'
 
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
@@ -48,14 +50,15 @@ const AuthenticatedAuditRoute = AuthenticatedAuditRouteImport.update({
   path: '/audit',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedBrokerConfigRoute =
+  AuthenticatedBrokerConfigRouteImport.update({
+    id: '/broker-config',
+    path: '/broker-config',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedNodesRoute = AuthenticatedNodesRouteImport.update({
   id: '/nodes',
   path: '/nodes',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedPluginsRoute = AuthenticatedPluginsRouteImport.update({
-  id: '/plugins',
-  path: '/plugins',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedPublishRoute = AuthenticatedPublishRouteImport.update({
@@ -96,14 +99,26 @@ const AuthenticatedClientsClientIdRoute =
     path: '/clients/$clientId',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedPluginsIndexRoute =
+  AuthenticatedPluginsIndexRouteImport.update({
+    id: '/plugins/',
+    path: '/plugins/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedPluginsNodeIdPluginRoute =
+  AuthenticatedPluginsNodeIdPluginRouteImport.update({
+    id: '/plugins/$nodeId/$plugin',
+    path: '/plugins/$nodeId/$plugin',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/login': typeof LoginRoute
   '/api-keys': typeof AuthenticatedApiKeysRoute
   '/audit': typeof AuthenticatedAuditRoute
+  '/broker-config': typeof AuthenticatedBrokerConfigRoute
   '/nodes': typeof AuthenticatedNodesRoute
-  '/plugins': typeof AuthenticatedPluginsRoute
   '/publish': typeof AuthenticatedPublishRoute
   '/retains': typeof AuthenticatedRetainsRoute
   '/routes': typeof AuthenticatedRoutesRoute
@@ -111,13 +126,15 @@ export interface FileRoutesByFullPath {
   '/users': typeof AuthenticatedUsersRoute
   '/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
   '/clients/': typeof AuthenticatedClientsIndexRoute
+  '/plugins/': typeof AuthenticatedPluginsIndexRoute
+  '/plugins/$nodeId/$plugin': typeof AuthenticatedPluginsNodeIdPluginRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/api-keys': typeof AuthenticatedApiKeysRoute
   '/audit': typeof AuthenticatedAuditRoute
+  '/broker-config': typeof AuthenticatedBrokerConfigRoute
   '/nodes': typeof AuthenticatedNodesRoute
-  '/plugins': typeof AuthenticatedPluginsRoute
   '/publish': typeof AuthenticatedPublishRoute
   '/retains': typeof AuthenticatedRetainsRoute
   '/routes': typeof AuthenticatedRoutesRoute
@@ -126,6 +143,8 @@ export interface FileRoutesByTo {
   '/': typeof AuthenticatedIndexRoute
   '/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
+  '/plugins': typeof AuthenticatedPluginsIndexRoute
+  '/plugins/$nodeId/$plugin': typeof AuthenticatedPluginsNodeIdPluginRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -133,8 +152,8 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/_authenticated/api-keys': typeof AuthenticatedApiKeysRoute
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
+  '/_authenticated/broker-config': typeof AuthenticatedBrokerConfigRoute
   '/_authenticated/nodes': typeof AuthenticatedNodesRoute
-  '/_authenticated/plugins': typeof AuthenticatedPluginsRoute
   '/_authenticated/publish': typeof AuthenticatedPublishRoute
   '/_authenticated/retains': typeof AuthenticatedRetainsRoute
   '/_authenticated/routes': typeof AuthenticatedRoutesRoute
@@ -143,6 +162,8 @@ export interface FileRoutesById {
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
+  '/_authenticated/plugins/': typeof AuthenticatedPluginsIndexRoute
+  '/_authenticated/plugins/$nodeId/$plugin': typeof AuthenticatedPluginsNodeIdPluginRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -151,8 +172,8 @@ export interface FileRouteTypes {
     | '/login'
     | '/api-keys'
     | '/audit'
+    | '/broker-config'
     | '/nodes'
-    | '/plugins'
     | '/publish'
     | '/retains'
     | '/routes'
@@ -160,13 +181,15 @@ export interface FileRouteTypes {
     | '/users'
     | '/clients/$clientId'
     | '/clients/'
+    | '/plugins/'
+    | '/plugins/$nodeId/$plugin'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
     | '/api-keys'
     | '/audit'
+    | '/broker-config'
     | '/nodes'
-    | '/plugins'
     | '/publish'
     | '/retains'
     | '/routes'
@@ -175,14 +198,16 @@ export interface FileRouteTypes {
     | '/'
     | '/clients/$clientId'
     | '/clients'
+    | '/plugins'
+    | '/plugins/$nodeId/$plugin'
   id:
     | '__root__'
     | '/_authenticated'
     | '/login'
     | '/_authenticated/api-keys'
     | '/_authenticated/audit'
+    | '/_authenticated/broker-config'
     | '/_authenticated/nodes'
-    | '/_authenticated/plugins'
     | '/_authenticated/publish'
     | '/_authenticated/retains'
     | '/_authenticated/routes'
@@ -191,6 +216,8 @@ export interface FileRouteTypes {
     | '/_authenticated/'
     | '/_authenticated/clients/$clientId'
     | '/_authenticated/clients/'
+    | '/_authenticated/plugins/'
+    | '/_authenticated/plugins/$nodeId/$plugin'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -235,18 +262,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAuditRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/broker-config': {
+      id: '/_authenticated/broker-config'
+      path: '/broker-config'
+      fullPath: '/broker-config'
+      preLoaderRoute: typeof AuthenticatedBrokerConfigRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/nodes': {
       id: '/_authenticated/nodes'
       path: '/nodes'
       fullPath: '/nodes'
       preLoaderRoute: typeof AuthenticatedNodesRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/plugins': {
-      id: '/_authenticated/plugins'
-      path: '/plugins'
-      fullPath: '/plugins'
-      preLoaderRoute: typeof AuthenticatedPluginsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/publish': {
@@ -298,14 +325,28 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedClientsClientIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/plugins/': {
+      id: '/_authenticated/plugins/'
+      path: '/plugins'
+      fullPath: '/plugins/'
+      preLoaderRoute: typeof AuthenticatedPluginsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/plugins/$nodeId/$plugin': {
+      id: '/_authenticated/plugins/$nodeId/$plugin'
+      path: '/plugins/$nodeId/$plugin'
+      fullPath: '/plugins/$nodeId/$plugin'
+      preLoaderRoute: typeof AuthenticatedPluginsNodeIdPluginRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
 interface AuthenticatedRouteChildren {
   AuthenticatedApiKeysRoute: typeof AuthenticatedApiKeysRoute
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
+  AuthenticatedBrokerConfigRoute: typeof AuthenticatedBrokerConfigRoute
   AuthenticatedNodesRoute: typeof AuthenticatedNodesRoute
-  AuthenticatedPluginsRoute: typeof AuthenticatedPluginsRoute
   AuthenticatedPublishRoute: typeof AuthenticatedPublishRoute
   AuthenticatedRetainsRoute: typeof AuthenticatedRetainsRoute
   AuthenticatedRoutesRoute: typeof AuthenticatedRoutesRoute
@@ -314,13 +355,15 @@ interface AuthenticatedRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedClientsClientIdRoute: typeof AuthenticatedClientsClientIdRoute
   AuthenticatedClientsIndexRoute: typeof AuthenticatedClientsIndexRoute
+  AuthenticatedPluginsIndexRoute: typeof AuthenticatedPluginsIndexRoute
+  AuthenticatedPluginsNodeIdPluginRoute: typeof AuthenticatedPluginsNodeIdPluginRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedApiKeysRoute: AuthenticatedApiKeysRoute,
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
+  AuthenticatedBrokerConfigRoute: AuthenticatedBrokerConfigRoute,
   AuthenticatedNodesRoute: AuthenticatedNodesRoute,
-  AuthenticatedPluginsRoute: AuthenticatedPluginsRoute,
   AuthenticatedPublishRoute: AuthenticatedPublishRoute,
   AuthenticatedRetainsRoute: AuthenticatedRetainsRoute,
   AuthenticatedRoutesRoute: AuthenticatedRoutesRoute,
@@ -329,6 +372,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedClientsClientIdRoute: AuthenticatedClientsClientIdRoute,
   AuthenticatedClientsIndexRoute: AuthenticatedClientsIndexRoute,
+  AuthenticatedPluginsIndexRoute: AuthenticatedPluginsIndexRoute,
+  AuthenticatedPluginsNodeIdPluginRoute: AuthenticatedPluginsNodeIdPluginRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

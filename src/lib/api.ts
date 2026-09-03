@@ -21,6 +21,7 @@ export class ApiError extends Error {
   requestId?: string
   body: string
   fromApi: boolean
+  data?: unknown
 
   constructor(init: {
     status: number
@@ -30,6 +31,7 @@ export class ApiError extends Error {
     requestId?: string
     body?: string
     fromApi?: boolean
+    data?: unknown
   }) {
     super(init.message)
     this.name = 'ApiError'
@@ -39,6 +41,7 @@ export class ApiError extends Error {
     this.requestId = init.requestId
     this.body = init.body ?? init.message
     this.fromApi = init.fromApi ?? false
+    this.data = init.data
   }
 }
 
@@ -105,6 +108,7 @@ function toApiError(response: AxiosResponse): ApiError {
     requestId,
     body: message,
     fromApi: Boolean(parsed?.message),
+    data: response.data,
   })
 }
 
@@ -156,13 +160,13 @@ export async function apiGetResponse<T>(
   return api.get<T>(path, { params: compactParams(params) })
 }
 
-export async function apiPost<T>(path: string, body?: unknown): Promise<T> {
-  const res = await api.post<T>(path, body)
+export async function apiPost<T>(path: string, body?: unknown, params?: Record<string, unknown>): Promise<T> {
+  const res = await api.post<T>(path, body, { params: compactParams(params) })
   return res.data
 }
 
-export async function apiPut<T>(path: string, body?: unknown): Promise<T> {
-  const res = await api.put<T>(path, body)
+export async function apiPut<T>(path: string, body?: unknown, params?: Record<string, unknown>): Promise<T> {
+  const res = await api.put<T>(path, body, { params: compactParams(params) })
   return res.data
 }
 

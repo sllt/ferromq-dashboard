@@ -685,10 +685,157 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Read a plugin config (GET only in this milestone) */
+        /** Read a plugin config (secrets redacted unless reveal=1 and admin) */
         get: operations["nodePluginConfig"];
+        /**
+         * Write a plugin config file (operator+)
+         * @description Accepts a JSON object, `{ "toml": "..." }`, or raw TOML. Atomically writes `{plugins.dir}/{plugin}.toml`, keeps last N backups, optionally applies via plugin `load_config` (`?apply=reload`, default). Returns a diff and `effective`: `hot` (already applied in-process via load_config — not a ferromqd restart), `reload` (call PUT .../config/reload), or `restart_required` (immutable / load_config failed / not initialized).
+         */
+        put: operations["nodePluginConfigUpdate"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/plugins/{node}/{plugin}/config/validate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Dry-run validate a plugin config without writing */
+        post: operations["nodePluginConfigValidate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/plugins/{node}/{plugin}/config/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List last-N plugin config backups */
+        get: operations["nodePluginConfigVersions"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/plugins/{node}/{plugin}/config/rollback/{version}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Restore a plugin config backup (operator+) */
+        post: operations["nodePluginConfigRollback"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/broker/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read-only ferromq.toml overview (mqtt/listener/log)
+         * @description Reads this node's ferromq.toml. Secrets are redacted unless `?reveal=1` and admin. Writing mqtt/listener/log never hot-restarts ferromqd (`effective` is always `restart_required`).
+         */
+        get: operations["getBrokerConfig"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/broker/config/{section}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read one ferromq.toml section (mqtt / listener / log) */
+        get: operations["getBrokerConfigSection"];
+        /**
+         * Write mqtt/listener/log to ferromq.toml (admin)
+         * @description Merges the JSON/TOML body into that section of ferromq.toml. Always returns `effective=restart_required`. Does not claim a hot restart of ferromqd.
+         */
+        put: operations["putBrokerConfigSection"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/broker/config/{section}/validate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Dry-run validate a mqtt/listener/log patch (admin) */
+        post: operations["validateBrokerConfigSection"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/broker/config/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List ferromq.toml backups */
+        get: operations["listBrokerConfigVersions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/broker/config/rollback/{version}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Restore a ferromq.toml backup (admin). Still restart_required. */
+        post: operations["rollbackBrokerConfig"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1292,6 +1439,68 @@ export interface components {
             plugins: components["schemas"]["PluginInfo"][];
             error?: string;
         };
+        /**
+         * @description hot = already applied via plugin load_config (not a ferromqd restart). reload = file written, call PUT .../config/reload. restart_required = process restart needed; ferromqd is never hot-restarted.
+         * @enum {string}
+         */
+        EffectiveMode: "hot" | "reload" | "restart_required";
+        ConfigDiff: {
+            added?: string[];
+            removed?: string[];
+            changed?: string[];
+        };
+        /** @description Either the config object itself, or `{ "toml": "..." }`. */
+        ConfigWriteBody: {
+            [key: string]: unknown;
+        };
+        ConfigWriteResult: {
+            ok: boolean;
+            written: boolean;
+            applied: boolean;
+            effective: components["schemas"]["EffectiveMode"];
+            diff: components["schemas"]["ConfigDiff"];
+            backup?: string | null;
+            apply_error?: string | null;
+            plugin?: string;
+            /** Format: int64 */
+            node?: number;
+            section?: string;
+            note?: string;
+        };
+        ConfigValidateResult: {
+            ok: boolean;
+            valid: boolean;
+            effective: components["schemas"]["EffectiveMode"];
+            diff: components["schemas"]["ConfigDiff"];
+            errors?: string[];
+            plugin?: string;
+            /** Format: int64 */
+            node?: number;
+            section?: string;
+            note?: string;
+        };
+        ConfigVersion: {
+            version: string;
+            /** Format: int64 */
+            ts: number;
+            /** Format: int64 */
+            size: number;
+        };
+        BrokerConfigOverview: {
+            file?: string;
+            writable_sections?: string[];
+            effective?: components["schemas"]["EffectiveMode"];
+            note?: string;
+            mqtt?: {
+                [key: string]: unknown;
+            };
+            listener?: {
+                [key: string]: unknown;
+            };
+            log?: {
+                [key: string]: unknown;
+            };
+        };
         StatsNode: {
             ok?: boolean;
             node?: {
@@ -1535,6 +1744,12 @@ export interface components {
         ClientId: string;
         PluginNode: number;
         PluginName: string;
+        /** @description If `1`/`true`, return unredacted secrets. Admin only; others get 403. */
+        RevealSecrets: "1" | "true" | "yes" | "on";
+        /** @description `reload` (default) calls plugin `load_config` after write. `none` writes the file only. */
+        ApplyMode: "reload" | "none";
+        ConfigVersionId: string;
+        BrokerSection: "mqtt" | "listener" | "listeners" | "log";
         /** @description Max rows. `0` or omitted uses plugin `max_row_limit` (default 10000). */
         Limit: number;
         /** @description Alias of `_limit` (used by `/retains` as the canonical name). */
@@ -2674,7 +2889,10 @@ export interface operations {
     };
     nodePluginConfig: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description If `1`/`true`, return unredacted secrets. Admin only; others get 403. */
+                reveal?: components["parameters"]["RevealSecrets"];
+            };
             header?: never;
             path: {
                 node: components["parameters"]["PluginNode"];
@@ -2684,7 +2902,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Plugin config JSON or text */
+            /** @description Plugin config JSON (password/token/private_key/secret/jwt keys redacted by default) */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -2696,8 +2914,299 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             503: components["responses"]["Unavailable"];
+        };
+    };
+    nodePluginConfigUpdate: {
+        parameters: {
+            query?: {
+                /** @description `reload` (default) calls plugin `load_config` after write. `none` writes the file only. */
+                apply?: components["parameters"]["ApplyMode"];
+            };
+            header?: never;
+            path: {
+                node: components["parameters"]["PluginNode"];
+                plugin: components["parameters"]["PluginName"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfigWriteBody"];
+                "application/toml": string;
+            };
+        };
+        responses: {
+            /** @description Written */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfigWriteResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            503: components["responses"]["Unavailable"];
+        };
+    };
+    nodePluginConfigValidate: {
+        parameters: {
+            query?: {
+                /** @description `reload` (default) calls plugin `load_config` after write. `none` writes the file only. */
+                apply?: components["parameters"]["ApplyMode"];
+            };
+            header?: never;
+            path: {
+                node: components["parameters"]["PluginNode"];
+                plugin: components["parameters"]["PluginName"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfigWriteBody"];
+                "application/toml": string;
+            };
+        };
+        responses: {
+            /** @description Valid */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfigValidateResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    nodePluginConfigVersions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                node: components["parameters"]["PluginNode"];
+                plugin: components["parameters"]["PluginName"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Newest first */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfigVersion"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    nodePluginConfigRollback: {
+        parameters: {
+            query?: {
+                /** @description `reload` (default) calls plugin `load_config` after write. `none` writes the file only. */
+                apply?: components["parameters"]["ApplyMode"];
+            };
+            header?: never;
+            path: {
+                node: components["parameters"]["PluginNode"];
+                plugin: components["parameters"]["PluginName"];
+                version: components["parameters"]["ConfigVersionId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Rolled back */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfigWriteResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    getBrokerConfig: {
+        parameters: {
+            query?: {
+                /** @description If `1`/`true`, return unredacted secrets. Admin only; others get 403. */
+                reveal?: components["parameters"]["RevealSecrets"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Overview */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrokerConfigOverview"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    getBrokerConfigSection: {
+        parameters: {
+            query?: {
+                /** @description If `1`/`true`, return unredacted secrets. Admin only; others get 403. */
+                reveal?: components["parameters"]["RevealSecrets"];
+            };
+            header?: never;
+            path: {
+                section: components["parameters"]["BrokerSection"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Section */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    putBrokerConfigSection: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                section: components["parameters"]["BrokerSection"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfigWriteBody"];
+                "application/toml": string;
+            };
+        };
+        responses: {
+            /** @description Written to disk only */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfigWriteResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    validateBrokerConfigSection: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                section: components["parameters"]["BrokerSection"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfigWriteBody"];
+            };
+        };
+        responses: {
+            /** @description Valid */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfigValidateResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    listBrokerConfigVersions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Newest first */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfigVersion"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    rollbackBrokerConfig: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                version: components["parameters"]["ConfigVersionId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Rolled back on disk */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfigWriteResult"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
         };
     };
     nodePluginConfigReload: {

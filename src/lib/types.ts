@@ -354,3 +354,57 @@ export type HistoryQuery = {
 }
 
 export type { PageResult } from '@/lib/list'
+
+export type EffectiveMode = 'hot' | 'reload' | 'restart_required'
+
+export type ConfigApplyMode = 'reload' | 'none'
+
+export type BrokerConfigSection = 'mqtt' | 'listener' | 'log'
+
+export type ConfigDiff = {
+  added?: string[]
+  removed?: string[]
+  changed?: string[]
+}
+
+export type ConfigWriteResult = {
+  ok: boolean
+  written: boolean
+  applied: boolean
+  effective: EffectiveMode
+  diff: ConfigDiff
+  backup?: string | null
+  apply_error?: string | null
+  plugin?: string
+  node?: number
+  section?: string
+  note?: string
+}
+
+export type ConfigValidateResult = {
+  ok: boolean
+  valid: boolean
+  effective: EffectiveMode
+  diff: ConfigDiff
+  errors?: string[]
+  plugin?: string
+  node?: number
+  section?: string
+  note?: string
+}
+
+export type ConfigVersion = {
+  version: string
+  ts: number
+  size: number
+}
+
+export type BrokerConfigOverview = {
+  file?: string
+  writable_sections?: string[]
+  effective?: EffectiveMode
+  note?: string
+  mqtt?: Record<string, unknown>
+  listener?: Record<string, unknown>
+  log?: Record<string, unknown>
+}

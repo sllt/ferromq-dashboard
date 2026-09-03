@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Link } from '@tanstack/react-router'
 import type { ColumnDef } from '@tanstack/react-table'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { DataTable } from '@/components/data-table'
@@ -8,10 +9,10 @@ import { PageHeader } from '@/components/page-header'
 import { ErrorState, TableSkeleton } from '@/components/query-state'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { toastApiError } from '@/lib/api'
 import { useCanWrite } from '@/lib/auth-store'
 import { partitionCluster } from '@/lib/cluster'
+import { isAclPlugin } from '@/lib/config'
 import { endpoints } from '@/lib/endpoints'
 import type { NodePlugins, PluginInfo } from '@/lib/types'
 
@@ -21,7 +22,6 @@ export function PluginsPage() {
   const { t } = useTranslation()
   const canWrite = useCanWrite()
   const qc = useQueryClient()
-  const [config, setConfig] = useState<{ node: number; name: string; json: unknown } | null>(null)
 
   const listQ = useQuery({ queryKey: ['plugins'], queryFn: endpoints.plugins })
   const clustered = partitionCluster<NodePlugins>(listQ.data?.items)
@@ -124,19 +124,10 @@ export function PluginsPage() {
                   </Button>
                 </>
               ) : null}
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={async () => {
-                  try {
-                    const json = await endpoints.pluginConfig(p.node, p.name)
-                    setConfig({ node: p.node, name: p.name, json })
-                  } catch (e) {
-                    toastApiError(e)
-                  }
-                }}
-              >
-                {t('plugins.config')}
+              <Button asChild size="sm" variant="secondary">
+                <Link to="/plugins/$nodeId/$plugin" params={{ nodeId: String(p.node), plugin: p.name }}>
+                  {t('plugins.config')}
+                </Link>
               </Button>
             </div>
           )
@@ -158,6 +149,9 @@ export function PluginsPage() {
         }
       />
       <p className="mb-3 text-xs text-muted-foreground">{t('plugins.immutableHint')}</p>
+      {rows.some((r) => isAclPlugin(r.name)) ? (
+        <p className="mb-3 text-xs text-muted-foreground">{t('config.aclHint')}</p>
+      ) : null}
       {clustered.errors.length > 0 ? (
         <div className="mb-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-800 dark:text-amber-300">
           {clustered.errors.map((e) => (
@@ -184,19 +178,6 @@ export function PluginsPage() {
           }
         />
       )}
-
-      <Dialog open={!!config} onOpenChange={(o) => !o && setConfig(null)}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>
-              {config?.name} @{config?.node}
-            </DialogTitle>
-          </DialogHeader>
-          <pre className="max-h-[60vh] overflow-auto rounded-lg bg-muted p-3 font-mono text-xs">
-            {config ? JSON.stringify(config.json, null, 2) : ''}
-          </pre>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }
