@@ -164,7 +164,10 @@ export function PluginConfigPage() {
         ) : null}
         {isAclPlugin(plugin) ? (
           <span className="rounded-md border border-dashed px-2 py-1 text-[11px] text-muted-foreground">
-            {t('config.aclHint')}
+            {t('config.aclHint')}{' '}
+            <Link to="/acl" className="underline underline-offset-2">
+              {t('nav.acl')}
+            </Link>
           </span>
         ) : null}
       </div>

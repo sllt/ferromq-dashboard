@@ -1202,6 +1202,389 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/acl": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * ACL settings and structured rules
+         * @description Reads ferromq-acl.toml. Passwords in who objects are `***` unless `?reveal=1` and admin.
+         */
+        get: operations["getAcl"];
+        /**
+         * Update ACL settings and/or replace rules
+         * @description Writes ferromq-acl.toml and applies via plugin load_config when possible (`effective=hot`).
+         */
+        put: operations["putAcl"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/acl/rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List ACL rules */
+        get: operations["listAclRules"];
+        put?: never;
+        /** Add an ACL rule */
+        post: operations["addAclRule"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/acl/rules/{index}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Replace an ACL rule by index */
+        put: operations["updateAclRule"];
+        post?: never;
+        /** Delete an ACL rule by index */
+        delete: operations["deleteAclRule"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth-providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List MQTT client auth plugins
+         * @description ferromq-auth-http and ferromq-auth-jwt only. Not dashboard login.
+         */
+        get: operations["listAuthProviders"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth-providers/{name}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get auth-http or auth-jwt config */
+        get: operations["getAuthProvider"];
+        /** Write auth provider config via P4 */
+        put: operations["putAuthProvider"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth-providers/{name}/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Connectivity / config test stub
+         * @description http: TCP connect after SSRF checks (no HTTP request). jwt: local hmac_secret / public_key file check. Not a live IdP probe.
+         */
+        post: operations["testAuthProvider"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/blacklist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Blacklist availability (gap)
+         * @description FerroMQ does not ship a blacklist plugin. Returns available=false and ACL connect-rule alternatives.
+         */
+        get: operations["getBlacklist"];
+        put?: never;
+        /** Not implemented (no plugin) */
+        post: operations["addBlacklist"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auto-subscriptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List auto-subscription topic filters */
+        get: operations["listAutoSubscriptions"];
+        put?: never;
+        /** Add an auto-subscription */
+        post: operations["addAutoSubscription"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auto-subscriptions/{index}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updateAutoSubscription"];
+        post?: never;
+        delete: operations["deleteAutoSubscription"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/topic-rewrites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List topic-rewrite rules */
+        get: operations["listTopicRewrites"];
+        put?: never;
+        /** Add a rewrite rule */
+        post: operations["addTopicRewrite"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/topic-rewrites/{index}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updateTopicRewrite"];
+        post?: never;
+        delete: operations["deleteTopicRewrite"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/webhooks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Webhook urls, rules, and plugin attrs
+         * @description URL userinfo is redacted unless reveal=1 and admin. queue_capacity / concurrency_limit need a plugin restart (plugin docs).
+         */
+        get: operations["getWebhooks"];
+        /** Update webhook settings / default urls */
+        put: operations["putWebhooks"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/webhooks/urls": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Append a default webhook URL */
+        post: operations["addWebhookUrl"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/webhooks/urls/{index}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["deleteWebhookUrl"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/webhooks/rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add a hook rule */
+        post: operations["addWebhookRule"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/webhooks/rules/{hook}/{index}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updateWebhookRule"];
+        post?: never;
+        delete: operations["deleteWebhookRule"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/webhooks/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * TCP connectivity stub (no HTTP POST)
+         * @description SSRF: only http/https; blocks loopback/private/metadata unless allow_private=1 and admin.
+         */
+        post: operations["testWebhook"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/bridges": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List bridge plugins and attrs */
+        get: operations["listBridges"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/bridges/{plugin}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Bridge config + plugin attrs */
+        get: operations["getBridge"];
+        /** Write bridge config via P4 */
+        put: operations["putBridge"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/bridges/{plugin}/load": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Start/load a bridge plugin */
+        put: operations["loadBridge"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/bridges/{plugin}/unload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Stop/unload a bridge plugin */
+        put: operations["unloadBridge"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1486,6 +1869,66 @@ export interface components {
             /** Format: int64 */
             size: number;
         };
+        AclRule: {
+            index?: number;
+            /** @enum {string} */
+            access?: "allow" | "deny";
+            who?: unknown;
+            /** @enum {string} */
+            control?: "all" | "connect" | "publish" | "subscribe" | "pubsub";
+            topics?: unknown[];
+            raw?: unknown[];
+        };
+        /** @description Structured rule or `{ "raw": ["allow", "all"] }` / a raw array. */
+        AclRuleInput: {
+            /** @enum {string} */
+            access?: "allow" | "deny";
+            who?: unknown;
+            control?: string;
+            topics?: unknown[];
+            raw?: unknown[];
+            /** @description Optional insert index on POST */
+            index?: number;
+        };
+        AclWriteBody: {
+            disconnect_if_pub_rejected?: boolean;
+            priority?: number;
+            rules?: components["schemas"]["AclRuleInput"][];
+        };
+        AclOverview: {
+            plugin?: string;
+            node?: number;
+            available?: boolean;
+            active?: boolean;
+            inited?: boolean;
+            reloadable?: boolean;
+            disconnect_if_pub_rejected?: boolean;
+            priority?: number;
+            rules?: components["schemas"]["AclRule"][];
+            note?: string;
+        };
+        AuthProviderList: {
+            node?: number;
+            providers?: Record<string, never>[];
+            note?: string;
+        };
+        ConnectivityTest: {
+            ok?: boolean;
+            /** @enum {string} */
+            kind?: "tcp_connect" | "jwt_config";
+            plugin?: string;
+            url?: string;
+            latency_ms?: number;
+            error?: string | null;
+            note?: string;
+        };
+        BlacklistGap: {
+            available: boolean;
+            plugin?: unknown;
+            items: unknown[];
+            gap: string;
+            alternatives?: unknown[];
+        };
         BrokerConfigOverview: {
             file?: string;
             writable_sections?: string[];
@@ -1765,6 +2208,17 @@ export interface components {
         /** @description End timestamp (milliseconds, inclusive) */
         HistoryTo: number;
         HistoryLimit: number;
+        /** @description If `1`/`true`, return unredacted secrets. Admin only; others get 403. */
+        Reveal: "1" | "true" | "yes" | "on";
+        /** @description `reload` (default) calls plugin `load_config` after write. `none` writes the file only. */
+        Apply: "reload" | "none";
+        /** @description Set to `page` to wrap a list. */
+        Format: "page";
+        /** @description Target node id. Defaults to the HTTP API local node. */
+        NodeQuery: number;
+        Index: number;
+        /** @description Allow loopback/private IPs on connectivity tests. Admin only. */
+        AllowPrivate: "1" | "true" | "yes" | "on";
     };
     requestBodies: never;
     headers: {
@@ -3744,6 +4198,739 @@ export interface operations {
             };
             401: components["responses"]["Unauthorized"];
             503: components["responses"]["Unavailable"];
+        };
+    };
+    getAcl: {
+        parameters: {
+            query?: {
+                /** @description If `1`/`true`, return unredacted secrets. Admin only; others get 403. */
+                reveal?: components["parameters"]["Reveal"];
+                /** @description Target node id. Defaults to the HTTP API local node. */
+                node?: components["parameters"]["NodeQuery"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description ACL overview */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AclOverview"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    putAcl: {
+        parameters: {
+            query?: {
+                /** @description `reload` (default) calls plugin `load_config` after write. `none` writes the file only. */
+                apply?: components["parameters"]["Apply"];
+                /** @description Target node id. Defaults to the HTTP API local node. */
+                node?: components["parameters"]["NodeQuery"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["AclWriteBody"];
+            };
+        };
+        responses: {
+            /** @description Write result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfigWriteResult"];
+                };
+            };
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    listAclRules: {
+        parameters: {
+            query?: {
+                /** @description If `1`/`true`, return unredacted secrets. Admin only; others get 403. */
+                reveal?: components["parameters"]["Reveal"];
+                /** @description Target node id. Defaults to the HTTP API local node. */
+                node?: components["parameters"]["NodeQuery"];
+                /** @description Set to `page` to wrap a list. */
+                format?: components["parameters"]["Format"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Rules */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AclRule"][];
+                };
+            };
+        };
+    };
+    addAclRule: {
+        parameters: {
+            query?: {
+                /** @description `reload` (default) calls plugin `load_config` after write. `none` writes the file only. */
+                apply?: components["parameters"]["Apply"];
+                /** @description Target node id. Defaults to the HTTP API local node. */
+                node?: components["parameters"]["NodeQuery"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AclRuleInput"];
+            };
+        };
+        responses: {
+            /** @description Added */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfigWriteResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    updateAclRule: {
+        parameters: {
+            query?: {
+                /** @description `reload` (default) calls plugin `load_config` after write. `none` writes the file only. */
+                apply?: components["parameters"]["Apply"];
+            };
+            header?: never;
+            path: {
+                index: components["parameters"]["Index"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AclRuleInput"];
+            };
+        };
+        responses: {
+            /** @description Updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfigWriteResult"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+        };
+    };
+    deleteAclRule: {
+        parameters: {
+            query?: {
+                /** @description `reload` (default) calls plugin `load_config` after write. `none` writes the file only. */
+                apply?: components["parameters"]["Apply"];
+            };
+            header?: never;
+            path: {
+                index: components["parameters"]["Index"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfigWriteResult"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+        };
+    };
+    listAuthProviders: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Providers */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthProviderList"];
+                };
+            };
+        };
+    };
+    getAuthProvider: {
+        parameters: {
+            query?: {
+                /** @description If `1`/`true`, return unredacted secrets. Admin only; others get 403. */
+                reveal?: components["parameters"]["Reveal"];
+            };
+            header?: never;
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Config (secrets redacted) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+            404: components["responses"]["NotFound"];
+        };
+    };
+    putAuthProvider: {
+        parameters: {
+            query?: {
+                /** @description `reload` (default) calls plugin `load_config` after write. `none` writes the file only. */
+                apply?: components["parameters"]["Apply"];
+            };
+            header?: never;
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Write result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfigWriteResult"];
+                };
+            };
+        };
+    };
+    testAuthProvider: {
+        parameters: {
+            query?: {
+                /** @description Allow loopback/private IPs on connectivity tests. Admin only. */
+                allow_private?: components["parameters"]["AllowPrivate"];
+            };
+            header?: never;
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Test result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConnectivityTest"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+        };
+    };
+    getBlacklist: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Gap document */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BlacklistGap"];
+                };
+            };
+        };
+    };
+    addBlacklist: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No blacklist plugin */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listAutoSubscriptions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Items */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    addAutoSubscription: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Write result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfigWriteResult"];
+                };
+            };
+        };
+    };
+    updateAutoSubscription: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                index: components["parameters"]["Index"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    deleteAutoSubscription: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                index: components["parameters"]["Index"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listTopicRewrites: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Items */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    addTopicRewrite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Write result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    updateTopicRewrite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                index: components["parameters"]["Index"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    deleteTopicRewrite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                index: components["parameters"]["Index"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getWebhooks: {
+        parameters: {
+            query?: {
+                /** @description If `1`/`true`, return unredacted secrets. Admin only; others get 403. */
+                reveal?: components["parameters"]["Reveal"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Webhook config */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    putWebhooks: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Write result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfigWriteResult"];
+                };
+            };
+        };
+    };
+    addWebhookUrl: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    url: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Added */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    deleteWebhookUrl: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                index: components["parameters"]["Index"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    addWebhookRule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Added */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    updateWebhookRule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    deleteWebhookRule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    testWebhook: {
+        parameters: {
+            query?: {
+                /** @description Allow loopback/private IPs on connectivity tests. Admin only. */
+                allow_private?: components["parameters"]["AllowPrivate"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    url?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Probe result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConnectivityTest"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+        };
+    };
+    listBridges: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Bridge list */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getBridge: {
+        parameters: {
+            query?: {
+                /** @description If `1`/`true`, return unredacted secrets. Admin only; others get 403. */
+                reveal?: components["parameters"]["Reveal"];
+            };
+            header?: never;
+            path: {
+                plugin: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Bridge */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            404: components["responses"]["NotFound"];
+        };
+    };
+    putBridge: {
+        parameters: {
+            query?: {
+                /** @description `reload` (default) calls plugin `load_config` after write. `none` writes the file only. */
+                apply?: components["parameters"]["Apply"];
+            };
+            header?: never;
+            path: {
+                plugin: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Write result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfigWriteResult"];
+                };
+            };
+        };
+    };
+    loadBridge: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Loaded */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    unloadBridge: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Unloaded */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
     };
 }

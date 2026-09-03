@@ -2,9 +2,9 @@
 
 Vendored copy of the broker spec used by `pnpm gen:api`.
 
-Upstream (dashboard/P4):
+Upstream (dashboard/P5):
 `ferromq-plugins/ferromq-http-api/openapi/openapi.json`
-on branch `dashboard/p4-config-mgmt` ([ferromq#5](https://github.com/sllt/ferromq/pull/5)).
+on branch `dashboard/p5-acl-integrations` ([ferromq#6](https://github.com/sllt/ferromq/pull/6)).
 
 Live broker:
 
@@ -18,20 +18,21 @@ Live broker:
 pnpm gen:api:live
 
 # or copy the checked-in broker file
-# curl -sfL https://raw.githubusercontent.com/sllt/ferromq/dashboard/p4-config-mgmt/ferromq-plugins/ferromq-http-api/openapi/openapi.json -o openapi/openapi.json
+# curl -sfL https://raw.githubusercontent.com/sllt/ferromq/dashboard/p5-acl-integrations/ferromq-plugins/ferromq-http-api/openapi/openapi.json -o openapi/openapi.json
 pnpm gen:api
 ```
 
 `pnpm gen:api` writes `src/api/generated/schema.d.ts`. Commit both files after a refresh. `pnpm build` does not need a live broker.
 
-The broker file on PR5 currently duplicates `components.securitySchemes`. This vendored copy keeps Bearer + `ferromq_session` cookie as one object so `openapi-typescript` can parse it.
+This vendored copy keeps Bearer + `ferromq_session` cookie as one `securitySchemes` object so `openapi-typescript` can parse it.
 
 ## Contract the dashboard relies on
 
 - Auth: `POST /auth/login` `{username,password}` → HttpOnly `ferromq_session` + `SessionUser`; `GET /auth/me`; `POST /auth/logout`; `POST /auth/change-password`; `POST /auth/init`
 - Roles: `admin` (users / keys / audit / broker config write / `?reveal=1` + writes) | `operator` (kick / publish / plugin config write+reload) | `viewer` (read-only, secrets redacted)
-- Admin: `GET/POST /users`, `POST /users/{username}/disable|enable`, `GET/POST /api-keys`, `DELETE /api-keys/{id}`, `GET /audit`, `PUT /broker/config/{section}`, `?reveal=1`
+- Admin: `GET/POST /users`, `POST /users/{username}/disable|enable`, `GET/POST /api-keys`, `DELETE /api-keys/{id}`, `GET /audit`, `PUT /broker/config/{section}`, `?reveal=1`, `allow_private=1`
 - Config: `GET/PUT /plugins/{node}/{plugin}/config`, `POST .../validate`, `GET .../versions`, `POST .../rollback/{version}`; `GET /broker/config`, `GET/PUT /broker/config/{mqtt|listener|log}`
+- P5: `/acl` `/acl/rules`, `/auth-providers/{http|jwt}` + `/test`, `/blacklist` (`available: false`), `/auto-subscriptions`, `/topic-rewrites`, `/webhooks` (+ `/test` TCP stub), `/bridges` + load/unload
 - `Authorization: Bearer` is the static `http_bearer_token` or a created API key secret (`fmqk_…`, shown once)
 - All `/api/v1` calls send cookies (`withCredentials` / `credentials: include`)
 - Errors: `{ code, message, details?, request_id }` plus `X-Request-Id`

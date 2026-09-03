@@ -408,3 +408,219 @@ export type BrokerConfigOverview = {
   listener?: Record<string, unknown>
   log?: Record<string, unknown>
 }
+
+export type AclAccess = 'allow' | 'deny'
+export type AclControl = 'all' | 'connect' | 'publish' | 'subscribe' | 'pubsub'
+
+export type AclWhoObject = {
+  user?: string
+  password?: string
+  superuser?: boolean
+  clientid?: string
+  ipaddr?: string
+  protocol?: number
+}
+
+export type AclWho = 'all' | AclWhoObject
+
+export type AclTopic = string | { eq: string }
+
+export type AclRule = {
+  index: number
+  access: string
+  who: unknown
+  control: string
+  topics?: AclTopic[]
+  raw?: unknown
+}
+
+export type AclRuleInput = {
+  access?: AclAccess
+  who?: AclWho
+  control?: AclControl
+  topics?: AclTopic[]
+  raw?: unknown
+  index?: number
+}
+
+export type AclOverview = {
+  plugin?: string
+  node?: number
+  available?: boolean
+  active?: boolean
+  inited?: boolean
+  reloadable?: boolean | null
+  disconnect_if_pub_rejected?: boolean
+  priority?: number
+  rules?: AclRule[]
+  note?: string
+}
+
+export type AuthProviderKind = 'http' | 'jwt'
+
+export type AuthProviderInfo = {
+  name: string
+  kind: string
+  node?: number
+  available?: boolean
+  active?: boolean
+  inited?: boolean
+  reloadable?: boolean | null
+  attrs?: unknown
+}
+
+export type AuthProviderList = {
+  node?: number
+  providers?: AuthProviderInfo[]
+  note?: string
+}
+
+export type AuthProviderDetail = AuthProviderInfo & {
+  config?: Record<string, unknown>
+  note?: string
+}
+
+export type ConnectivityTest = {
+  ok: boolean
+  kind?: string
+  plugin?: string
+  url?: string
+  host?: string
+  port?: number
+  latency_ms?: number | null
+  error?: string | null
+  note?: string
+  encrypt?: string
+  public_key?: string
+}
+
+export type BlacklistAlternative = {
+  plugin?: string
+  how?: string
+}
+
+export type BlacklistGap = {
+  available: boolean
+  plugin?: string | null
+  items?: unknown[]
+  gap?: string
+  alternatives?: BlacklistAlternative[]
+}
+
+export type PluginArrayList<T> = {
+  plugin?: string
+  node?: number
+  available?: boolean
+  active?: boolean
+  inited?: boolean
+  reloadable?: boolean | null
+  items?: T[]
+  missing?: boolean
+}
+
+export type AutoSubscription = {
+  index?: number
+  topic_filter: string
+  qos: number
+  no_local?: boolean
+  retain_as_published?: boolean
+  retain_handling?: number
+}
+
+export type TopicRewrite = {
+  index?: number
+  action: string
+  source_topic_filter: string
+  dest_topic: string
+  regex?: string
+}
+
+export type WebhookRule = {
+  hook?: string
+  index?: number
+  action?: string
+  urls?: string[]
+  topics?: string[]
+  value?: unknown
+}
+
+export type WebhooksOverview = {
+  plugin?: string
+  node?: number
+  available?: boolean
+  active?: boolean
+  inited?: boolean
+  reloadable?: boolean | null
+  attrs?: unknown
+  queue_capacity?: unknown
+  concurrency_limit?: unknown
+  http_timeout?: unknown
+  retry_max_elapsed_time?: unknown
+  retry_multiplier?: unknown
+  urls?: string[]
+  rules?: WebhookRule[]
+  note?: string
+  missing?: boolean
+}
+
+export type BridgeKind = {
+  direction?: string
+  transport?: string
+}
+
+export type BridgeInfo = {
+  name: string
+  kind?: BridgeKind
+  node?: number
+  available?: boolean
+  active?: boolean
+  inited?: boolean
+  immutable?: boolean
+  reloadable?: boolean | null
+  attrs?: unknown
+}
+
+export type BridgeList = {
+  node?: number
+  items?: BridgeInfo[]
+  note?: string
+}
+
+export type BridgeDetail = BridgeInfo & {
+  config?: Record<string, unknown>
+  note?: string
+}
+
+export type BridgeToggleResult = {
+  ok?: boolean
+  name?: string
+  node?: number
+  loaded?: boolean
+}
+
+export const ACL_CONTROLS: AclControl[] = ['all', 'connect', 'publish', 'subscribe', 'pubsub']
+
+export const REWRITE_ACTIONS = ['all', 'publish', 'subscribe'] as const
+
+export const WEBHOOK_HOOKS = [
+  'session_created',
+  'session_terminated',
+  'session_subscribed',
+  'session_unsubscribed',
+  'client_connect',
+  'client_connack',
+  'client_connected',
+  'client_disconnected',
+  'client_subscribe',
+  'client_unsubscribe',
+  'message_publish',
+  'message_delivered',
+  'message_acked',
+  'message_dropped',
+  'offline_message',
+  'keepalive',
+  'offline_inflight_messages',
+  'message_expiry_check',
+  'before_startup',
+  'grpc_message_received',
+] as const
