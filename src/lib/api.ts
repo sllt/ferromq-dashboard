@@ -119,6 +119,7 @@ function statusKey(status: number): string {
   if (status === 404) return 'errors.notFound'
   if (status === 409) return 'errors.conflict'
   if (status === 429) return 'errors.tooManyRequests'
+  if (status === 501) return 'errors.notImplemented'
   if (status === 503 || status === 502) return 'errors.unavailable'
   return 'errors.generic'
 }
@@ -151,6 +152,16 @@ export function getErrorTitle(error: unknown): string {
 export async function apiGet<T>(path: string, params?: Record<string, unknown>): Promise<T> {
   const res = await api.get<T>(path, { params: compactParams(params) })
   return res.data
+}
+
+/** GET that treats HTTP 404 as `null` (missing plugin config file). */
+export async function apiGetOptional<T>(path: string, params?: Record<string, unknown>): Promise<T | null> {
+  try {
+    return await apiGet<T>(path, params)
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) return null
+    throw error
+  }
 }
 
 export async function apiGetResponse<T>(

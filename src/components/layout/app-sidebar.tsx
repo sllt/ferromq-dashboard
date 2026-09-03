@@ -1,19 +1,25 @@
 import { Link, useRouterState } from '@tanstack/react-router'
 import {
   Activity,
+  Ban,
   Box,
+  Cable,
+  Fingerprint,
   KeyRound,
   Layers,
   LayoutDashboard,
   Network,
   Plug,
   Radio,
+  Repeat2,
   Route as RouteIcon,
   ScrollText,
   Send,
   Settings2,
+  Shield,
   UserCog,
   Users,
+  Webhook,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
@@ -60,6 +66,17 @@ const groups: NavGroup[] = [
     items: [
       { to: '/plugins', labelKey: 'nav.plugins', icon: Plug },
       { to: '/broker-config', labelKey: 'nav.brokerConfig', icon: Settings2 },
+    ],
+  },
+  {
+    titleKey: 'nav.access',
+    items: [
+      { to: '/acl', labelKey: 'nav.acl', icon: Shield },
+      { to: '/auth-providers', labelKey: 'nav.authProviders', icon: Fingerprint },
+      { to: '/auto-subscriptions', labelKey: 'nav.rewrites', icon: Repeat2 },
+      { to: '/webhooks', labelKey: 'nav.webhooks', icon: Webhook },
+      { to: '/bridges', labelKey: 'nav.bridges', icon: Cable },
+      { to: '/blacklist', labelKey: 'nav.blacklist', icon: Ban },
     ],
   },
   {

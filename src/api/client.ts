@@ -11,6 +11,7 @@ export {
   api,
   apiDelete,
   apiGet,
+  apiGetOptional,
   apiGetResponse,
   apiPost,
   apiPut,

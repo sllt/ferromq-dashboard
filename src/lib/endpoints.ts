@@ -1,4 +1,4 @@
-import { apiDelete, apiGet, apiPost, apiPut } from '@/lib/api'
+import { apiDelete, apiGet, apiGetOptional, apiPost, apiPut } from '@/lib/api'
 import { partitionCluster } from '@/lib/cluster'
 import { apiGetList, type ListQuery } from '@/lib/list'
 import type {
@@ -32,12 +32,27 @@ import type {
   StatsSum,
   SubscriptionInfo,
   RetainItem,
+  AclOverview,
+  AclRule,
+  AclRuleInput,
+  AuthProviderDetail,
+  AuthProviderList,
+  AutoSubscription,
+  BlacklistGap,
+  BridgeDetail,
+  BridgeList,
+  BridgeToggleResult,
   BrokerConfigOverview,
   BrokerConfigSection,
   ConfigApplyMode,
   ConfigValidateResult,
   ConfigVersion,
   ConfigWriteResult,
+  ConnectivityTest,
+  PluginArrayList,
+  TopicRewrite,
+  WebhookRule,
+  WebhooksOverview,
 } from '@/lib/types'
 
 export const endpoints = {
@@ -150,6 +165,97 @@ export const endpoints = {
   metricsSum: () => apiGet<Record<string, number>>('/metrics/sum'),
   metricsHistory: (query?: HistoryQuery) => apiGet<HistoryCluster>('/metrics/history', query),
   metricsHistorySum: (query?: HistoryQuery) => apiGet<HistorySum>('/metrics/history/sum', query),
+
+  acl: (reveal?: boolean) => apiGet<AclOverview>('/acl', reveal ? { reveal: '1' } : undefined),
+  aclUpdate: (body: unknown, apply: ConfigApplyMode = 'reload') =>
+    apiPut<ConfigWriteResult>('/acl', body, { apply }),
+  aclRules: (query?: ListQuery & { reveal?: boolean }) =>
+    apiGetList<AclRule>('/acl/rules', query?.reveal ? { ...query, reveal: '1' } : query),
+  aclRuleAdd: (body: AclRuleInput, apply: ConfigApplyMode = 'reload') =>
+    apiPost<ConfigWriteResult>('/acl/rules', body, { apply }),
+  aclRuleUpdate: (index: number, body: AclRuleInput, apply: ConfigApplyMode = 'reload') =>
+    apiPut<ConfigWriteResult>(`/acl/rules/${index}`, body, { apply }),
+  aclRuleDelete: (index: number, apply: ConfigApplyMode = 'reload') =>
+    apiDelete<ConfigWriteResult>(`/acl/rules/${index}`, { apply }),
+
+  authProviders: () => apiGet<AuthProviderList>('/auth-providers'),
+  authProvider: (name: string, reveal?: boolean) =>
+    apiGet<AuthProviderDetail>(
+      `/auth-providers/${encodeURIComponent(name)}`,
+      reveal ? { reveal: '1' } : undefined,
+    ),
+  authProviderUpdate: (name: string, body: unknown, apply: ConfigApplyMode = 'reload') =>
+    apiPut<ConfigWriteResult>(`/auth-providers/${encodeURIComponent(name)}`, body, { apply }),
+  authProviderTest: (name: string, body?: { url?: string }, allowPrivate?: boolean) =>
+    apiPost<ConnectivityTest>(
+      `/auth-providers/${encodeURIComponent(name)}/test`,
+      body ?? {},
+      allowPrivate ? { allow_private: '1' } : undefined,
+    ),
+
+  blacklist: () => apiGet<BlacklistGap>('/blacklist'),
+
+  autoSubscriptions: (reveal?: boolean) =>
+    apiGetOptional<PluginArrayList<AutoSubscription>>(
+      '/auto-subscriptions',
+      reveal ? { reveal: '1' } : undefined,
+    ),
+  autoSubscriptionAdd: (body: AutoSubscription, apply: ConfigApplyMode = 'reload') =>
+    apiPost<ConfigWriteResult>('/auto-subscriptions', body, { apply }),
+  autoSubscriptionUpdate: (index: number, body: AutoSubscription, apply: ConfigApplyMode = 'reload') =>
+    apiPut<ConfigWriteResult>(`/auto-subscriptions/${index}`, body, { apply }),
+  autoSubscriptionDelete: (index: number, apply: ConfigApplyMode = 'reload') =>
+    apiDelete<ConfigWriteResult>(`/auto-subscriptions/${index}`, { apply }),
+
+  topicRewrites: (reveal?: boolean) =>
+    apiGetOptional<PluginArrayList<TopicRewrite>>(
+      '/topic-rewrites',
+      reveal ? { reveal: '1' } : undefined,
+    ),
+  topicRewriteAdd: (body: TopicRewrite, apply: ConfigApplyMode = 'reload') =>
+    apiPost<ConfigWriteResult>('/topic-rewrites', body, { apply }),
+  topicRewriteUpdate: (index: number, body: TopicRewrite, apply: ConfigApplyMode = 'reload') =>
+    apiPut<ConfigWriteResult>(`/topic-rewrites/${index}`, body, { apply }),
+  topicRewriteDelete: (index: number, apply: ConfigApplyMode = 'reload') =>
+    apiDelete<ConfigWriteResult>(`/topic-rewrites/${index}`, { apply }),
+
+  webhooks: (reveal?: boolean) =>
+    apiGetOptional<WebhooksOverview>('/webhooks', reveal ? { reveal: '1' } : undefined),
+  webhooksUpdate: (body: unknown, apply: ConfigApplyMode = 'reload') =>
+    apiPut<ConfigWriteResult>('/webhooks', body, { apply }),
+  webhookUrlAdd: (url: string, apply: ConfigApplyMode = 'reload') =>
+    apiPost<ConfigWriteResult>('/webhooks/urls', { url }, { apply }),
+  webhookUrlDelete: (index: number, apply: ConfigApplyMode = 'reload') =>
+    apiDelete<ConfigWriteResult>(`/webhooks/urls/${index}`, { apply }),
+  webhookRuleAdd: (body: WebhookRule, apply: ConfigApplyMode = 'reload') =>
+    apiPost<ConfigWriteResult>('/webhooks/rules', body, { apply }),
+  webhookRuleUpdate: (hook: string, index: number, body: WebhookRule, apply: ConfigApplyMode = 'reload') =>
+    apiPut<ConfigWriteResult>(
+      `/webhooks/rules/${encodeURIComponent(hook)}/${index}`,
+      body,
+      { apply },
+    ),
+  webhookRuleDelete: (hook: string, index: number, apply: ConfigApplyMode = 'reload') =>
+    apiDelete<ConfigWriteResult>(
+      `/webhooks/rules/${encodeURIComponent(hook)}/${index}`,
+      { apply },
+    ),
+  webhookTest: (body?: { url?: string }, allowPrivate?: boolean) =>
+    apiPost<ConnectivityTest>(
+      '/webhooks/test',
+      body ?? {},
+      allowPrivate ? { allow_private: '1' } : undefined,
+    ),
+
+  bridges: () => apiGet<BridgeList>('/bridges'),
+  bridge: (plugin: string, reveal?: boolean) =>
+    apiGet<BridgeDetail>(`/bridges/${encodeURIComponent(plugin)}`, reveal ? { reveal: '1' } : undefined),
+  bridgeUpdate: (plugin: string, body: unknown, apply: ConfigApplyMode = 'reload') =>
+    apiPut<ConfigWriteResult>(`/bridges/${encodeURIComponent(plugin)}`, body, { apply }),
+  bridgeLoad: (plugin: string) =>
+    apiPut<BridgeToggleResult>(`/bridges/${encodeURIComponent(plugin)}/load`),
+  bridgeUnload: (plugin: string) =>
+    apiPut<BridgeToggleResult>(`/bridges/${encodeURIComponent(plugin)}/unload`),
 }
 
 export function asArray<T>(value: T | T[] | null | undefined): T[] {
