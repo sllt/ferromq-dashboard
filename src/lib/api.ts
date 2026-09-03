@@ -1,15 +1,12 @@
 import axios, { AxiosError, type AxiosResponse } from 'axios'
 import { toast } from 'sonner'
+import { parseErrorBody, type ApiErrorBody } from '@/lib/api-error'
 import i18n from '@/lib/i18n'
 import { clearAuthSession, getAuthToken } from '@/lib/auth-store'
 import { compactParams } from '@/lib/utils'
 
-export type ApiErrorBody = {
-  code?: number | string
-  message?: string
-  details?: unknown
-  request_id?: string
-}
+export type { ApiErrorBody }
+export { parseErrorBody }
 
 export class ApiError extends Error {
   status: number
@@ -17,6 +14,7 @@ export class ApiError extends Error {
   details?: unknown
   requestId?: string
   body: string
+  fromApi: boolean
 
   constructor(init: {
     status: number
@@ -25,6 +23,7 @@ export class ApiError extends Error {
     details?: unknown
     requestId?: string
     body?: string
+    fromApi?: boolean
   }) {
     super(init.message)
     this.name = 'ApiError'
@@ -33,6 +32,7 @@ export class ApiError extends Error {
     this.details = init.details
     this.requestId = init.requestId
     this.body = init.body ?? init.message
+    this.fromApi = init.fromApi ?? false
   }
 }
 
@@ -66,23 +66,17 @@ api.interceptors.response.use((response) => {
   return response
 })
 
-export function parseErrorBody(data: unknown): ApiErrorBody | null {
-  if (!data || typeof data !== 'object' || Array.isArray(data)) return null
-  const rec = data as Record<string, unknown>
-  const message = typeof rec.message === 'string' ? rec.message : undefined
-  const code = typeof rec.code === 'number' || typeof rec.code === 'string' ? rec.code : undefined
-  const requestId = typeof rec.request_id === 'string' ? rec.request_id : undefined
-  if (message == null && code == null && requestId == null && rec.details === undefined) return null
-  return { code, message, details: rec.details, request_id: requestId }
+function looksLikeHtml(value: string): boolean {
+  return /^\s*</.test(value)
 }
 
 function toApiError(response: AxiosResponse): ApiError {
   const parsed = parseErrorBody(response.data)
-  const fallback =
-    typeof response.data === 'string' && response.data.trim()
+  const raw =
+    typeof response.data === 'string' && response.data.trim() && !looksLikeHtml(response.data)
       ? response.data.trim().slice(0, 400)
-      : `HTTP ${response.status}`
-  const message = parsed?.message?.trim() || fallback
+      : ''
+  const message = parsed?.message?.trim() || raw || `HTTP ${response.status}`
   return new ApiError({
     status: response.status,
     message,
@@ -90,6 +84,7 @@ function toApiError(response: AxiosResponse): ApiError {
     details: parsed?.details,
     requestId: parsed?.request_id,
     body: message,
+    fromApi: Boolean(parsed?.message),
   })
 }
 
@@ -105,14 +100,17 @@ function statusKey(status: number): string {
 
 export function getErrorMessage(error: unknown): string {
   if (error instanceof ApiError) {
-    const mapped = i18n.t(statusKey(error.status), { defaultValue: '' })
-    const base = error.message && error.message !== `HTTP ${error.status}` ? error.message : mapped || error.message
+    const mapped = i18n.t(statusKey(error.status))
+    const base = error.fromApi && error.message ? error.message : mapped || error.message
     if (error.requestId) {
       return `${base} (${i18n.t('errors.requestId')}: ${error.requestId})`
     }
     return base
   }
-  if (error instanceof AxiosError) return error.message
+  if (error instanceof AxiosError) {
+    if (!error.response) return i18n.t('errors.unavailable')
+    return error.message
+  }
   if (error instanceof Error) return error.message
   return String(error)
 }

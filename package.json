@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "gen:api": "openapi-typescript openapi/openapi.json -o src/api/generated/schema.d.ts",
-    "gen:api:live": "node scripts/refresh-openapi.mjs && pnpm gen:api"
+    "gen:api:live": "node scripts/refresh-openapi.mjs && pnpm gen:api",
+    "verify:parsers": "node --experimental-strip-types scripts/verify-parsers.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

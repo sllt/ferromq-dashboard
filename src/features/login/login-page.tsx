@@ -16,7 +16,7 @@ export function LoginPage() {
   const connect = useAuthStore((s) => s.connect)
   const [token, setToken] = useState('')
   const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<unknown>(null)
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -30,15 +30,18 @@ export function LoginPage() {
       await navigate({ to: redirect.startsWith('/') ? redirect : '/' })
     } catch (err) {
       useAuthStore.getState().logout()
-      if (err instanceof ApiError && err.status === 401) {
-        setError(t('auth.invalid'))
-      } else {
-        setError(getErrorMessage(err) || t('auth.unreachable'))
-      }
+      setError(err)
     } finally {
       setBusy(false)
     }
   }
+
+  const errorText =
+    error == null
+      ? null
+      : error instanceof ApiError && error.status === 401
+        ? t('auth.invalid')
+        : getErrorMessage(error) || t('auth.unreachable')
 
   return (
     <div className="relative min-h-svh overflow-hidden bg-background">
@@ -77,9 +80,9 @@ export function LoginPage() {
               className="font-mono"
             />
           </div>
-          {error ? (
+          {errorText ? (
             <div className="mt-3 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-              {error}
+              {errorText}
             </div>
           ) : null}
           <Button type="submit" className="mt-5 w-full" disabled={busy}>
