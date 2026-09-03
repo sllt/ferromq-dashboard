@@ -2,13 +2,16 @@ import { Link, useRouterState } from '@tanstack/react-router'
 import {
   Activity,
   Box,
+  KeyRound,
   Layers,
   LayoutDashboard,
   Network,
   Plug,
   Radio,
   Route as RouteIcon,
+  ScrollText,
   Send,
+  UserCog,
   Users,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -16,6 +19,7 @@ import { cn } from '@/lib/utils'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { useCanAdmin, useCanWrite } from '@/lib/auth-store'
 import { useClusterFeatures, type FeatureKey } from '@/lib/features'
 
 type NavItem = {
@@ -23,6 +27,8 @@ type NavItem = {
   labelKey: string
   icon: React.ComponentType<{ className?: string }>
   feature?: FeatureKey
+  write?: boolean
+  admin?: boolean
 }
 
 type NavGroup = {
@@ -45,12 +51,20 @@ const groups: NavGroup[] = [
       { to: '/subscriptions', labelKey: 'nav.subscriptions', icon: Radio },
       { to: '/routes', labelKey: 'nav.routes', icon: RouteIcon },
       { to: '/retains', labelKey: 'nav.retains', icon: Layers, feature: 'retain' },
-      { to: '/publish', labelKey: 'nav.publish', icon: Send },
+      { to: '/publish', labelKey: 'nav.publish', icon: Send, write: true },
     ],
   },
   {
     titleKey: 'nav.cluster',
     items: [{ to: '/plugins', labelKey: 'nav.plugins', icon: Plug }],
+  },
+  {
+    titleKey: 'nav.admin',
+    items: [
+      { to: '/users', labelKey: 'nav.users', icon: UserCog, admin: true },
+      { to: '/api-keys', labelKey: 'nav.apikeys', icon: KeyRound, admin: true },
+      { to: '/audit', labelKey: 'nav.audit', icon: ScrollText, admin: true },
+    ],
   },
 ]
 
@@ -58,6 +72,8 @@ export function AppSidebar({ collapsed }: { collapsed: boolean }) {
   const { t } = useTranslation()
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const features = useClusterFeatures()
+  const canWrite = useCanWrite()
+  const canAdmin = useCanAdmin()
 
   return (
     <aside
@@ -80,59 +96,67 @@ export function AppSidebar({ collapsed }: { collapsed: boolean }) {
       <Separator />
       <ScrollArea className="flex-1 py-3">
         <nav className="space-y-4 px-2">
-          {groups.map((group) => (
-            <div key={group.titleKey}>
-              {!collapsed ? (
-                <div className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                  {t(group.titleKey)}
-                </div>
-              ) : null}
-              <div className="space-y-0.5">
-                {group.items.map((item) => {
-                  const active = item.to === '/' ? pathname === '/' : pathname.startsWith(item.to)
-                  const Icon = item.icon
-                  const gated = item.feature && !features.isLoading && !features.isError && !features.has(item.feature)
-                  if (gated) {
-                    const label = (
-                      <span
+          {groups.map((group) => {
+            const visible = group.items.filter((item) => {
+              if (item.admin && !canAdmin) return false
+              if (item.write && !canWrite) return false
+              return true
+            })
+            if (visible.length === 0) return null
+            return (
+              <div key={group.titleKey}>
+                {!collapsed ? (
+                  <div className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    {t(group.titleKey)}
+                  </div>
+                ) : null}
+                <div className="space-y-0.5">
+                  {visible.map((item) => {
+                    const active = item.to === '/' ? pathname === '/' : pathname.startsWith(item.to)
+                    const Icon = item.icon
+                    const gated = item.feature && !features.isLoading && !features.isError && !features.has(item.feature)
+                    if (gated) {
+                      const label = (
+                        <span
+                          className={cn(
+                            'flex cursor-not-allowed items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm opacity-45',
+                            collapsed && 'justify-center px-0',
+                          )}
+                        >
+                          <Icon className="size-4 shrink-0" />
+                          {!collapsed ? <span>{t(item.labelKey)}</span> : null}
+                        </span>
+                      )
+                      return (
+                        <Tooltip key={item.to}>
+                          <TooltipTrigger asChild>{label}</TooltipTrigger>
+                          <TooltipContent>
+                            {t('features.unavailableHint', { feature: t(`nodes.${item.feature}`) })}
+                          </TooltipContent>
+                        </Tooltip>
+                      )
+                    }
+                    return (
+                      <Link
+                        key={item.to}
+                        to={item.to}
                         className={cn(
-                          'flex cursor-not-allowed items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm opacity-45',
+                          'flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm transition-colors',
                           collapsed && 'justify-center px-0',
+                          active
+                            ? 'bg-sidebar-accent font-medium text-sidebar-accent-foreground shadow-sm'
+                            : 'text-muted-foreground hover:bg-sidebar-accent/70 hover:text-foreground',
                         )}
                       >
-                        <Icon className="size-4 shrink-0" />
+                        <Icon className={cn('size-4 shrink-0', active && 'text-primary')} />
                         {!collapsed ? <span>{t(item.labelKey)}</span> : null}
-                      </span>
+                      </Link>
                     )
-                    return (
-                      <Tooltip key={item.to}>
-                        <TooltipTrigger asChild>{label}</TooltipTrigger>
-                        <TooltipContent>
-                          {t('features.unavailableHint', { feature: t(`nodes.${item.feature}`) })}
-                        </TooltipContent>
-                      </Tooltip>
-                    )
-                  }
-                  return (
-                    <Link
-                      key={item.to}
-                      to={item.to}
-                      className={cn(
-                        'flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm transition-colors',
-                        collapsed && 'justify-center px-0',
-                        active
-                          ? 'bg-sidebar-accent font-medium text-sidebar-accent-foreground shadow-sm'
-                          : 'text-muted-foreground hover:bg-sidebar-accent/70 hover:text-foreground',
-                      )}
-                    >
-                      <Icon className={cn('size-4 shrink-0', active && 'text-primary')} />
-                      {!collapsed ? <span>{t(item.labelKey)}</span> : null}
-                    </Link>
-                  )
-                })}
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </nav>
       </ScrollArea>
       <Separator />

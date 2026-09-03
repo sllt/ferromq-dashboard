@@ -3,6 +3,7 @@
  */
 import { parseErrorBody } from '../src/lib/api-error.ts'
 import { parseListResponse } from '../src/lib/list-parse.ts'
+import { canAdmin, canWrite, parseSessionUser } from '../src/lib/session-user.ts'
 
 let failed = 0
 function assert(name, cond) {
@@ -43,6 +44,18 @@ const body = parseErrorBody({ code: 404, message: 'plugin not found', request_id
 assert('error {code,message,request_id}', body?.code === 404 && body?.message === 'plugin not found' && body?.request_id === 'req-1')
 assert('error ignore non-object', parseErrorBody('nope') === null)
 assert('error ignore array', parseErrorBody([]) === null)
+
+const session = parseSessionUser({ username: 'admin', role: 'admin', auth: 'session', expires_in: 1800 })
+assert('session user', session?.username === 'admin' && session.role === 'admin' && session.auth === 'session' && canWrite(session))
+const viewer = parseSessionUser({ username: 'ops', role: 'viewer', auth: 'session' })
+assert('viewer cannot write', viewer?.role === 'viewer' && canWrite(viewer) === false)
+assert('reject missing role', parseSessionUser({ username: 'x', auth: 'session' }) === null)
+assert('reject password leak shape', parseSessionUser({ username: 'a', role: 'admin', auth: 'session', password: 'secret' })?.username === 'a')
+assert('anonymous admin can write', canWrite({ username: 'anonymous', role: 'admin', auth: 'anonymous' }))
+const ops = parseSessionUser({ username: 'ops', role: 'operator', auth: 'session' })
+assert('operator can write but not admin', ops?.role === 'operator' && canWrite(ops) === true && canAdmin(ops) === false)
+assert('admin can admin', canAdmin({ username: 'admin', role: 'admin', auth: 'session' }) === true)
+assert('api_key auth', parseSessionUser({ username: 'ci', role: 'operator', auth: 'api_key', key_id: 'k1' })?.auth === 'api_key')
 
 if (failed) {
   console.error(`${failed} failed`)

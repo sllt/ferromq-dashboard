@@ -2,9 +2,9 @@
 
 Vendored copy of the broker spec used by `pnpm gen:api`.
 
-Upstream (dashboard/P2):
+Upstream (dashboard/P3b):
 `ferromq-plugins/ferromq-http-api/openapi/openapi.json`
-on branch `dashboard/p2-openapi-contract` ([ferromq#2](https://github.com/sllt/ferromq/pull/2)).
+on branch `dashboard/p3b-apikeys-audit` ([ferromq#4](https://github.com/sllt/ferromq/pull/4)).
 
 Live broker:
 
@@ -18,14 +18,21 @@ Live broker:
 pnpm gen:api:live
 
 # or copy the checked-in broker file
-# curl -sfL https://raw.githubusercontent.com/sllt/ferromq/dashboard/p2-openapi-contract/ferromq-plugins/ferromq-http-api/openapi/openapi.json -o openapi/openapi.json
+# curl -sfL https://raw.githubusercontent.com/sllt/ferromq/dashboard/p3b-apikeys-audit/ferromq-plugins/ferromq-http-api/openapi/openapi.json -o openapi/openapi.json
 pnpm gen:api
 ```
 
 `pnpm gen:api` writes `src/api/generated/schema.d.ts`. Commit both files after a refresh. `pnpm build` does not need a live broker.
 
+The broker file on PR3 currently duplicates `components.securitySchemes`. This vendored copy merges Bearer + `ferromq_session` cookie into a single key so `openapi-typescript` can parse it.
+
 ## Contract the dashboard relies on
 
+- Auth: `POST /auth/login` `{username,password}` → HttpOnly `ferromq_session` + `SessionUser`; `GET /auth/me`; `POST /auth/logout`; `POST /auth/change-password`; `POST /auth/init`
+- Roles: `admin` (users / keys / audit + writes) | `operator` (kick / publish / plugins) | `viewer` (read-only)
+- Admin: `GET/POST /users`, `POST /users/{username}/disable|enable`, `GET/POST /api-keys`, `DELETE /api-keys/{id}`, `GET /audit`
+- `Authorization: Bearer` is the static `http_bearer_token` or a created API key secret (`fmqk_…`, shown once)
+- All `/api/v1` calls send cookies (`withCredentials` / `credentials: include`)
 - Errors: `{ code, message, details?, request_id }` plus `X-Request-Id`
 - Lists: default bare arrays; `?format=page` → `{ items, offset, limit, truncated, total? }`
 - Headers: `X-Row-Count` / `X-Truncated`

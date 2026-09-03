@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { toastApiError } from '@/lib/api'
+import { useCanWrite } from '@/lib/auth-store'
 import { endpoints } from '@/lib/endpoints'
 import type { SubscriptionInfo } from '@/lib/types'
 
@@ -19,6 +20,7 @@ export function ClientDetailPage() {
   const { t } = useTranslation()
   const { clientId } = useParams({ from: '/_authenticated/clients/$clientId' })
   const qc = useQueryClient()
+  const canWrite = useCanWrite()
 
   const clientQ = useQuery({ queryKey: ['client', clientId], queryFn: () => endpoints.client(clientId) })
   const subsQ = useQuery({
@@ -97,9 +99,11 @@ export function ClientDetailPage() {
         title={t('clients.detailTitle', { id: c.clientid })}
         description={t('clients.detailDesc')}
         actions={
-          <Button size="sm" variant="destructive" onClick={() => kickMut.mutate()}>
-            {t('clients.kick')}
-          </Button>
+          canWrite ? (
+            <Button size="sm" variant="destructive" onClick={() => kickMut.mutate()}>
+              {t('clients.kick')}
+            </Button>
+          ) : undefined
         }
       />
 
