@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { asArray, endpoints } from '@/lib/endpoints'
-import type { FeatureFlags, NodeInfo } from '@/lib/types'
+import type { FeatureFlags, HealthCheck, NodeHealth, NodeInfo } from '@/lib/types'
 import { formatBytes, formatLoad, formatNumber } from '@/lib/utils'
 
 const FEATURE_KEYS: (keyof FeatureFlags)[] = [
@@ -20,6 +20,39 @@ const FEATURE_KEYS: (keyof FeatureFlags)[] = [
   'shared_subscription',
   'auto_subscription',
 ]
+
+
+function normalizeHealthNodes(health: HealthCheck | undefined): Array<NodeHealth & { key: string }> {
+  const nodes = health?.nodes
+  if (!nodes) return []
+  if (Array.isArray(nodes)) {
+    return nodes.map((node, idx) => ({
+      ...node,
+      key: String(node.node_id ?? idx),
+      name: node.name ?? (node.node_id != null ? `node-${node.node_id}` : `#${idx}`),
+      status: node.status ?? (node.running ? 'Running' : 'Stopped'),
+    }))
+  }
+  return Object.entries(nodes).map(([id, node]) => ({
+    ...node,
+    key: id,
+    name: node.name ?? id,
+    status: node.status ?? (node.running ? 'Running' : 'Stopped'),
+  }))
+}
+
+function healthRunning(health: HealthCheck | undefined): boolean {
+  if (!health) return false
+  if (typeof health.running === 'boolean') return health.running
+  if (health.status) return health.status === 'Running'
+  const list = normalizeHealthNodes(health)
+  return list.length > 0 && list.every((n) => n.running)
+}
+
+function healthStatusLabel(health: HealthCheck | undefined, runningLabel: string, degradedLabel: string): string {
+  if (health?.status) return health.status
+  return healthRunning(health) ? runningLabel : degradedLabel
+}
 
 export function NodesPage() {
   const { t } = useTranslation()
@@ -91,17 +124,23 @@ export function NodesPage() {
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               {t('nodes.health')}
-              <Badge variant={health?.status === 'Running' ? 'success' : 'warning'}>{health?.status}</Badge>
+              <Badge variant={healthRunning(health) ? 'success' : 'warning'}>
+                {healthStatusLabel(health, t('common.running'), t('common.degraded'))}
+              </Badge>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            {Object.entries(health?.nodes ?? {}).map(([id, node]) => (
-              <div key={id} className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm">
+            {normalizeHealthNodes(health).map((node) => (
+              <div key={node.key} className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm">
                 <div>
                   <div className="font-mono">{node.name}</div>
-                  <div className="text-xs text-muted-foreground">{node.uptime}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {node.uptime ?? node.descr ?? (node.node_id != null ? `id=${node.node_id}` : '')}
+                  </div>
                 </div>
-                <Badge variant={node.running ? 'success' : 'destructive'}>{node.status}</Badge>
+                <Badge variant={node.running ? 'success' : 'destructive'}>
+                  {node.status ?? (node.running ? t('common.running') : t('common.degraded'))}
+                </Badge>
               </div>
             ))}
           </CardContent>

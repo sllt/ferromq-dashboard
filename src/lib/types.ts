@@ -63,15 +63,28 @@ export type FeaturesResponse = {
 }
 
 export type NodeHealth = {
-  name: string
+  /** Actual FerroMQ JSON uses node_id; docs/legacy used name. */
+  node_id?: number
+  name?: string
   running: boolean
   uptime?: string
+  /** Docs/legacy field; live broker uses running (+ optional descr). */
   status?: string
+  leader_id?: number
+  descr?: string
 }
 
+/**
+ * Live FerroMQ (HealthInfo::to_json) returns:
+ *   { running: bool, nodes: [{ node_id, running, ... }] }
+ * Older docs/RMQTT-style responses used:
+ *   { status: "Running", nodes: { "1": { name, running, uptime, status } } }
+ */
 export type HealthCheck = {
-  status: string
-  nodes: Record<string, NodeHealth>
+  status?: string
+  running?: boolean
+  descr?: string
+  nodes: Record<string, NodeHealth> | NodeHealth[]
 }
 
 export type LastWill = {
@@ -192,7 +205,7 @@ export type PluginInfo = {
   name: string
   version?: string | null
   descr?: string | null
-  authors?: string | null
+  authors?: string | string[] | null
   homepage?: string | null
   license?: string | null
   repository?: string | null
