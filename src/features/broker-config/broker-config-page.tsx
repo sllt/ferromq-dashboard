@@ -39,12 +39,12 @@ import type {
 const LOG_TO = ['off', 'file', 'console', 'both'] as const
 const LOG_LEVEL = ['trace', 'debug', 'info', 'warn', 'error'] as const
 
-export function BrokerConfigPage() {
+export function BrokerConfigPage({ initialSection }: { initialSection?: BrokerConfigSection }) {
   const { t } = useTranslation()
   const canAdmin = useCanAdmin()
   const qc = useQueryClient()
   const [reveal, setReveal] = useState(false)
-  const [section, setSection] = useState<BrokerConfigSection>('mqtt')
+  const [section, setSection] = useState<BrokerConfigSection>(initialSection ?? 'mqtt')
   const [text, setText] = useState('{}')
   const [advanced, setAdvanced] = useState(false)
   const [preview, setPreview] = useState<ConfigValidateResult | null>(null)
@@ -60,6 +60,11 @@ export function BrokerConfigPage() {
     queryKey: ['broker-config-versions'],
     queryFn: () => endpoints.brokerConfigVersions(),
   })
+
+  useEffect(() => {
+    if (!initialSection) return
+    setSection(initialSection)
+  }, [initialSection])
 
   useEffect(() => {
     if (!overviewQ.data) return

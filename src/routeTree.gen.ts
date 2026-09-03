@@ -13,17 +13,23 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedAclRouteImport } from './routes/_authenticated/acl'
+import { Route as AuthenticatedAlarmsRouteImport } from './routes/_authenticated/alarms'
 import { Route as AuthenticatedApiKeysRouteImport } from './routes/_authenticated/api-keys'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedAuthProvidersRouteImport } from './routes/_authenticated/auth-providers'
 import { Route as AuthenticatedAutoSubscriptionsRouteImport } from './routes/_authenticated/auto-subscriptions'
 import { Route as AuthenticatedBlacklistRouteImport } from './routes/_authenticated/blacklist'
 import { Route as AuthenticatedBrokerConfigRouteImport } from './routes/_authenticated/broker-config'
+import { Route as AuthenticatedClusterRouteImport } from './routes/_authenticated/cluster'
+import { Route as AuthenticatedLogsRouteImport } from './routes/_authenticated/logs'
 import { Route as AuthenticatedNodesRouteImport } from './routes/_authenticated/nodes'
 import { Route as AuthenticatedPublishRouteImport } from './routes/_authenticated/publish'
 import { Route as AuthenticatedRetainsRouteImport } from './routes/_authenticated/retains'
 import { Route as AuthenticatedRoutesRouteImport } from './routes/_authenticated/routes'
+import { Route as AuthenticatedSlowSubsRouteImport } from './routes/_authenticated/slow-subs'
 import { Route as AuthenticatedSubscriptionsRouteImport } from './routes/_authenticated/subscriptions'
+import { Route as AuthenticatedTopicMetricsRouteImport } from './routes/_authenticated/topic-metrics'
+import { Route as AuthenticatedTraceRouteImport } from './routes/_authenticated/trace'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
 import { Route as AuthenticatedWebhooksRouteImport } from './routes/_authenticated/webhooks'
 import { Route as AuthenticatedBridgesIndexRouteImport } from './routes/_authenticated/bridges/index'
@@ -50,6 +56,11 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
 const AuthenticatedAclRoute = AuthenticatedAclRouteImport.update({
   id: '/acl',
   path: '/acl',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAlarmsRoute = AuthenticatedAlarmsRouteImport.update({
+  id: '/alarms',
+  path: '/alarms',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedApiKeysRoute = AuthenticatedApiKeysRouteImport.update({
@@ -85,6 +96,16 @@ const AuthenticatedBrokerConfigRoute =
     path: '/broker-config',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedClusterRoute = AuthenticatedClusterRouteImport.update({
+  id: '/cluster',
+  path: '/cluster',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedLogsRoute = AuthenticatedLogsRouteImport.update({
+  id: '/logs',
+  path: '/logs',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedNodesRoute = AuthenticatedNodesRouteImport.update({
   id: '/nodes',
   path: '/nodes',
@@ -105,12 +126,28 @@ const AuthenticatedRoutesRoute = AuthenticatedRoutesRouteImport.update({
   path: '/routes',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedSlowSubsRoute = AuthenticatedSlowSubsRouteImport.update({
+  id: '/slow-subs',
+  path: '/slow-subs',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedSubscriptionsRoute =
   AuthenticatedSubscriptionsRouteImport.update({
     id: '/subscriptions',
     path: '/subscriptions',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedTopicMetricsRoute =
+  AuthenticatedTopicMetricsRouteImport.update({
+    id: '/topic-metrics',
+    path: '/topic-metrics',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedTraceRoute = AuthenticatedTraceRouteImport.update({
+  id: '/trace',
+  path: '/trace',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -162,17 +199,23 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/login': typeof LoginRoute
   '/acl': typeof AuthenticatedAclRoute
+  '/alarms': typeof AuthenticatedAlarmsRoute
   '/api-keys': typeof AuthenticatedApiKeysRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/auth-providers': typeof AuthenticatedAuthProvidersRoute
   '/auto-subscriptions': typeof AuthenticatedAutoSubscriptionsRoute
   '/blacklist': typeof AuthenticatedBlacklistRoute
   '/broker-config': typeof AuthenticatedBrokerConfigRoute
+  '/cluster': typeof AuthenticatedClusterRoute
+  '/logs': typeof AuthenticatedLogsRoute
   '/nodes': typeof AuthenticatedNodesRoute
   '/publish': typeof AuthenticatedPublishRoute
   '/retains': typeof AuthenticatedRetainsRoute
   '/routes': typeof AuthenticatedRoutesRoute
+  '/slow-subs': typeof AuthenticatedSlowSubsRoute
   '/subscriptions': typeof AuthenticatedSubscriptionsRoute
+  '/topic-metrics': typeof AuthenticatedTopicMetricsRoute
+  '/trace': typeof AuthenticatedTraceRoute
   '/users': typeof AuthenticatedUsersRoute
   '/webhooks': typeof AuthenticatedWebhooksRoute
   '/bridges/$plugin': typeof AuthenticatedBridgesPluginRoute
@@ -185,17 +228,23 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/acl': typeof AuthenticatedAclRoute
+  '/alarms': typeof AuthenticatedAlarmsRoute
   '/api-keys': typeof AuthenticatedApiKeysRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/auth-providers': typeof AuthenticatedAuthProvidersRoute
   '/auto-subscriptions': typeof AuthenticatedAutoSubscriptionsRoute
   '/blacklist': typeof AuthenticatedBlacklistRoute
   '/broker-config': typeof AuthenticatedBrokerConfigRoute
+  '/cluster': typeof AuthenticatedClusterRoute
+  '/logs': typeof AuthenticatedLogsRoute
   '/nodes': typeof AuthenticatedNodesRoute
   '/publish': typeof AuthenticatedPublishRoute
   '/retains': typeof AuthenticatedRetainsRoute
   '/routes': typeof AuthenticatedRoutesRoute
+  '/slow-subs': typeof AuthenticatedSlowSubsRoute
   '/subscriptions': typeof AuthenticatedSubscriptionsRoute
+  '/topic-metrics': typeof AuthenticatedTopicMetricsRoute
+  '/trace': typeof AuthenticatedTraceRoute
   '/users': typeof AuthenticatedUsersRoute
   '/webhooks': typeof AuthenticatedWebhooksRoute
   '/': typeof AuthenticatedIndexRoute
@@ -211,17 +260,23 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
   '/_authenticated/acl': typeof AuthenticatedAclRoute
+  '/_authenticated/alarms': typeof AuthenticatedAlarmsRoute
   '/_authenticated/api-keys': typeof AuthenticatedApiKeysRoute
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
   '/_authenticated/auth-providers': typeof AuthenticatedAuthProvidersRoute
   '/_authenticated/auto-subscriptions': typeof AuthenticatedAutoSubscriptionsRoute
   '/_authenticated/blacklist': typeof AuthenticatedBlacklistRoute
   '/_authenticated/broker-config': typeof AuthenticatedBrokerConfigRoute
+  '/_authenticated/cluster': typeof AuthenticatedClusterRoute
+  '/_authenticated/logs': typeof AuthenticatedLogsRoute
   '/_authenticated/nodes': typeof AuthenticatedNodesRoute
   '/_authenticated/publish': typeof AuthenticatedPublishRoute
   '/_authenticated/retains': typeof AuthenticatedRetainsRoute
   '/_authenticated/routes': typeof AuthenticatedRoutesRoute
+  '/_authenticated/slow-subs': typeof AuthenticatedSlowSubsRoute
   '/_authenticated/subscriptions': typeof AuthenticatedSubscriptionsRoute
+  '/_authenticated/topic-metrics': typeof AuthenticatedTopicMetricsRoute
+  '/_authenticated/trace': typeof AuthenticatedTraceRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/_authenticated/webhooks': typeof AuthenticatedWebhooksRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
@@ -238,17 +293,23 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/acl'
+    | '/alarms'
     | '/api-keys'
     | '/audit'
     | '/auth-providers'
     | '/auto-subscriptions'
     | '/blacklist'
     | '/broker-config'
+    | '/cluster'
+    | '/logs'
     | '/nodes'
     | '/publish'
     | '/retains'
     | '/routes'
+    | '/slow-subs'
     | '/subscriptions'
+    | '/topic-metrics'
+    | '/trace'
     | '/users'
     | '/webhooks'
     | '/bridges/$plugin'
@@ -261,17 +322,23 @@ export interface FileRouteTypes {
   to:
     | '/login'
     | '/acl'
+    | '/alarms'
     | '/api-keys'
     | '/audit'
     | '/auth-providers'
     | '/auto-subscriptions'
     | '/blacklist'
     | '/broker-config'
+    | '/cluster'
+    | '/logs'
     | '/nodes'
     | '/publish'
     | '/retains'
     | '/routes'
+    | '/slow-subs'
     | '/subscriptions'
+    | '/topic-metrics'
+    | '/trace'
     | '/users'
     | '/webhooks'
     | '/'
@@ -286,17 +353,23 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/login'
     | '/_authenticated/acl'
+    | '/_authenticated/alarms'
     | '/_authenticated/api-keys'
     | '/_authenticated/audit'
     | '/_authenticated/auth-providers'
     | '/_authenticated/auto-subscriptions'
     | '/_authenticated/blacklist'
     | '/_authenticated/broker-config'
+    | '/_authenticated/cluster'
+    | '/_authenticated/logs'
     | '/_authenticated/nodes'
     | '/_authenticated/publish'
     | '/_authenticated/retains'
     | '/_authenticated/routes'
+    | '/_authenticated/slow-subs'
     | '/_authenticated/subscriptions'
+    | '/_authenticated/topic-metrics'
+    | '/_authenticated/trace'
     | '/_authenticated/users'
     | '/_authenticated/webhooks'
     | '/_authenticated/'
@@ -343,6 +416,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAclRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/alarms': {
+      id: '/_authenticated/alarms'
+      path: '/alarms'
+      fullPath: '/alarms'
+      preLoaderRoute: typeof AuthenticatedAlarmsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/api-keys': {
       id: '/_authenticated/api-keys'
       path: '/api-keys'
@@ -385,6 +465,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBrokerConfigRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/cluster': {
+      id: '/_authenticated/cluster'
+      path: '/cluster'
+      fullPath: '/cluster'
+      preLoaderRoute: typeof AuthenticatedClusterRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/logs': {
+      id: '/_authenticated/logs'
+      path: '/logs'
+      fullPath: '/logs'
+      preLoaderRoute: typeof AuthenticatedLogsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/nodes': {
       id: '/_authenticated/nodes'
       path: '/nodes'
@@ -413,11 +507,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRoutesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/slow-subs': {
+      id: '/_authenticated/slow-subs'
+      path: '/slow-subs'
+      fullPath: '/slow-subs'
+      preLoaderRoute: typeof AuthenticatedSlowSubsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/subscriptions': {
       id: '/_authenticated/subscriptions'
       path: '/subscriptions'
       fullPath: '/subscriptions'
       preLoaderRoute: typeof AuthenticatedSubscriptionsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/topic-metrics': {
+      id: '/_authenticated/topic-metrics'
+      path: '/topic-metrics'
+      fullPath: '/topic-metrics'
+      preLoaderRoute: typeof AuthenticatedTopicMetricsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/trace': {
+      id: '/_authenticated/trace'
+      path: '/trace'
+      fullPath: '/trace'
+      preLoaderRoute: typeof AuthenticatedTraceRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/users': {
@@ -481,17 +596,23 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteChildren {
   AuthenticatedAclRoute: typeof AuthenticatedAclRoute
+  AuthenticatedAlarmsRoute: typeof AuthenticatedAlarmsRoute
   AuthenticatedApiKeysRoute: typeof AuthenticatedApiKeysRoute
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
   AuthenticatedAuthProvidersRoute: typeof AuthenticatedAuthProvidersRoute
   AuthenticatedAutoSubscriptionsRoute: typeof AuthenticatedAutoSubscriptionsRoute
   AuthenticatedBlacklistRoute: typeof AuthenticatedBlacklistRoute
   AuthenticatedBrokerConfigRoute: typeof AuthenticatedBrokerConfigRoute
+  AuthenticatedClusterRoute: typeof AuthenticatedClusterRoute
+  AuthenticatedLogsRoute: typeof AuthenticatedLogsRoute
   AuthenticatedNodesRoute: typeof AuthenticatedNodesRoute
   AuthenticatedPublishRoute: typeof AuthenticatedPublishRoute
   AuthenticatedRetainsRoute: typeof AuthenticatedRetainsRoute
   AuthenticatedRoutesRoute: typeof AuthenticatedRoutesRoute
+  AuthenticatedSlowSubsRoute: typeof AuthenticatedSlowSubsRoute
   AuthenticatedSubscriptionsRoute: typeof AuthenticatedSubscriptionsRoute
+  AuthenticatedTopicMetricsRoute: typeof AuthenticatedTopicMetricsRoute
+  AuthenticatedTraceRoute: typeof AuthenticatedTraceRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
   AuthenticatedWebhooksRoute: typeof AuthenticatedWebhooksRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
@@ -505,17 +626,23 @@ interface AuthenticatedRouteChildren {
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAclRoute: AuthenticatedAclRoute,
+  AuthenticatedAlarmsRoute: AuthenticatedAlarmsRoute,
   AuthenticatedApiKeysRoute: AuthenticatedApiKeysRoute,
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
   AuthenticatedAuthProvidersRoute: AuthenticatedAuthProvidersRoute,
   AuthenticatedAutoSubscriptionsRoute: AuthenticatedAutoSubscriptionsRoute,
   AuthenticatedBlacklistRoute: AuthenticatedBlacklistRoute,
   AuthenticatedBrokerConfigRoute: AuthenticatedBrokerConfigRoute,
+  AuthenticatedClusterRoute: AuthenticatedClusterRoute,
+  AuthenticatedLogsRoute: AuthenticatedLogsRoute,
   AuthenticatedNodesRoute: AuthenticatedNodesRoute,
   AuthenticatedPublishRoute: AuthenticatedPublishRoute,
   AuthenticatedRetainsRoute: AuthenticatedRetainsRoute,
   AuthenticatedRoutesRoute: AuthenticatedRoutesRoute,
+  AuthenticatedSlowSubsRoute: AuthenticatedSlowSubsRoute,
   AuthenticatedSubscriptionsRoute: AuthenticatedSubscriptionsRoute,
+  AuthenticatedTopicMetricsRoute: AuthenticatedTopicMetricsRoute,
+  AuthenticatedTraceRoute: AuthenticatedTraceRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
   AuthenticatedWebhooksRoute: AuthenticatedWebhooksRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,

@@ -13,6 +13,16 @@ import {
 } from '../src/lib/config.ts'
 import { parseListResponse } from '../src/lib/list-parse.ts'
 import { canAdmin, canWrite, parseSessionUser } from '../src/lib/session-user.ts'
+import {
+  alternativeLink,
+  parseAlarm,
+  parseAlarmList,
+  parseCapabilityGap,
+  parseClusterTopology,
+  parseClusterWriteResult,
+  parseNodeCluster,
+  parseTopicMetrics,
+} from '../src/lib/diagnostics.ts'
 
 let failed = 0
 function assert(name, cond) {
@@ -96,6 +106,118 @@ const vr = parseConfigValidateResult({
 })
 assert('validate result', vr?.valid === true && vr.effective === 'restart_required' && vr.diff.changed?.[0] === 'mqtt.max_sessions')
 assert('reject validate noise', parseConfigValidateResult({ message: 'bad' }) === null)
+
+const alarm = parseAlarm({
+  id: 'node_unhealthy:2',
+  name: 'node_unhealthy',
+  level: 'critical',
+  node_id: 2,
+  message: 'node 2 is not running',
+  source: 'health',
+  activated_at: 1_700_000_000_000,
+  acknowledged: false,
+})
+assert('alarm current', alarm?.id === 'node_unhealthy:2' && alarm.acknowledged === false && alarm.level === 'critical')
+assert('reject alarm noise', parseAlarm({ id: 'x' }) === null)
+
+const alarmList = parseAlarmList({
+  available: true,
+  source: 'derived',
+  note: 'in-memory',
+  items: [alarm, { nope: true }],
+})
+assert('alarm list drops junk', alarmList?.available === true && alarmList.items.length === 1 && alarmList.source === 'derived')
+
+const logsGap = parseCapabilityGap({
+  available: false,
+  plugin: null,
+  kind: 'logs',
+  items: [],
+  gap: 'no collector',
+  alternatives: [{ api: 'GET /api/v1/broker/config/log', how: 'read log.level' }],
+})
+assert('logs gap', logsGap?.available === false && logsGap.kind === 'logs' && logsGap.alternatives?.[0].api?.includes('broker/config/log'))
+assert('gap link broker log', alternativeLink(logsGap.alternatives[0])?.to === '/broker-config')
+assert('gap link subscriptions', alternativeLink({ api: 'GET /api/v1/subscriptions' })?.to === '/subscriptions')
+assert('reject gap without available', parseCapabilityGap({ gap: 'x' }) === null)
+
+const topicMetrics = parseTopicMetrics({
+  available: true,
+  kind: 'route_derived',
+  note: 'not rates',
+  sys_topic: { plugin: 'ferromq-sys-topic', loaded: false, active: false, topics: [] },
+  items: [{ topic: 'a/b', subscribers: 3, node_ids: [1] }, { bad: true }],
+  offset: 0,
+  limit: 50,
+  truncated: false,
+})
+assert(
+  'topic metrics route_derived',
+  topicMetrics?.available === true &&
+    topicMetrics.kind === 'route_derived' &&
+    topicMetrics.items.length === 1 &&
+    topicMetrics.items[0].subscribers === 3 &&
+    topicMetrics.sys_topic?.active === false,
+)
+
+const standalone = parseClusterTopology({
+  available: true,
+  mode: 'standalone',
+  plugin: null,
+  plugin_active: false,
+  local_node_id: 1,
+  leader_id: null,
+  role: 'standalone',
+  peers: [],
+  nodes: [{ ok: true, node_id: 1, role: 'standalone', reachable: true, leader: false }],
+  membership: { join: false, leave: false, reason: 'no plugin' },
+})
+assert(
+  'cluster standalone',
+  standalone?.mode === 'standalone' &&
+    standalone.membership?.join === false &&
+    standalone.membership?.leave === false &&
+    standalone.nodes?.[0].node_id === 1,
+)
+
+const raft = parseClusterTopology({
+  available: true,
+  mode: 'raft',
+  plugin: 'ferromq-cluster-raft',
+  plugin_active: true,
+  local_node_id: 1,
+  leader_id: 1,
+  role: 'leader',
+  peers: [2],
+  nodes: [
+    { ok: true, node_id: 1, role: 'leader', reachable: true, leader: true },
+    { ok: true, node_id: 2, role: 'follower', reachable: true, leader: false },
+  ],
+  membership: { join: false, leave: true, reason: 'raft leave only' },
+})
+assert('cluster raft leave', raft?.mode === 'raft' && raft.membership?.leave === true && raft.membership?.join === false)
+
+const join501 = parseClusterWriteResult({
+  ok: false,
+  action: 'join',
+  available: false,
+  message: 'runtime join is not supported',
+  nodes: [{ ok: false, node_id: 1, error: 'runtime join is not supported' }],
+})
+assert('cluster join 501 details', join501?.ok === false && join501.action === 'join' && join501.nodes?.[0].ok === false)
+
+const leaveOk = parseClusterWriteResult({
+  ok: true,
+  action: 'leave',
+  available: true,
+  nodes: [{ ok: true, node_id: 1, result: { op: 'leave' } }],
+})
+assert('cluster leave ok', leaveOk?.ok === true && leaveOk.nodes?.[0].result?.op === 'leave')
+
+const nodeCluster = parseNodeCluster({ mode: 'raft', plugin: 'ferromq-cluster-raft', leader_id: 1, role: 'follower', peers: [1, 2] })
+assert('node cluster extra field', nodeCluster?.mode === 'raft' && nodeCluster.role === 'follower' && nodeCluster.leader_id === 1)
+assert('node without cluster stays undefined', parseNodeCluster({ connections: 3 }) === undefined)
+assert('reject topology without local id', parseClusterTopology({ available: true, mode: 'raft' }) === null)
 
 if (failed) {
   console.error(`${failed} failed`)

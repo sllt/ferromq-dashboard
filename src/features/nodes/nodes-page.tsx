@@ -89,6 +89,29 @@ export function NodesPage() {
       },
       { accessorKey: 'uptime', header: t('nodes.uptime') },
       { accessorKey: 'version', header: t('nodes.version') },
+      {
+        id: 'clusterMode',
+        header: t('nodes.clusterMode'),
+        cell: ({ row }) => row.original.cluster?.mode ?? '—',
+      },
+      {
+        id: 'clusterRole',
+        header: t('nodes.clusterRole'),
+        cell: ({ row }) => {
+          const cluster = row.original.cluster
+          if (!cluster?.role && cluster?.leader_id == null) return '—'
+          return (
+            <span>
+              {cluster.role ?? '—'}
+              {cluster.leader_id != null ? (
+                <span className="ml-1 text-[11px] text-muted-foreground">
+                  {t('nodes.leader')}={cluster.leader_id}
+                </span>
+              ) : null}
+            </span>
+          )
+        },
+      },
     ],
     [t],
   )

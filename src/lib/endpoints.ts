@@ -1,5 +1,6 @@
-import { apiDelete, apiGet, apiGetOptional, apiPost, apiPut } from '@/lib/api'
+import { ApiError, apiDelete, apiGet, apiGetOptional, apiPost, apiPut } from '@/lib/api'
 import { partitionCluster } from '@/lib/cluster'
+import { parseCapabilityGap, parseClusterWriteResult } from '@/lib/diagnostics'
 import { apiGetList, type ListQuery } from '@/lib/list'
 import type {
   ApiEndpoint,
@@ -41,8 +42,13 @@ import type {
   BlacklistGap,
   BridgeDetail,
   BridgeList,
+  AlarmAckResult,
+  AlarmList,
   BridgeToggleResult,
   BrokerConfigOverview,
+  CapabilityGap,
+  ClusterTopology,
+  ClusterWriteResult,
   BrokerConfigSection,
   ConfigApplyMode,
   ConfigValidateResult,
@@ -50,6 +56,7 @@ import type {
   ConfigWriteResult,
   ConnectivityTest,
   PluginArrayList,
+  TopicMetrics,
   TopicRewrite,
   WebhookRule,
   WebhooksOverview,
@@ -256,6 +263,52 @@ export const endpoints = {
     apiPut<BridgeToggleResult>(`/bridges/${encodeURIComponent(plugin)}/load`),
   bridgeUnload: (plugin: string) =>
     apiPut<BridgeToggleResult>(`/bridges/${encodeURIComponent(plugin)}/unload`),
+
+  alarms: (query?: ListQuery) => apiGet<AlarmList>('/alarms', query),
+  alarmsHistory: (query?: ListQuery) => apiGet<AlarmList>('/alarms/history', query),
+  acknowledgeAlarm: (id: string) =>
+    apiPost<AlarmAckResult>(`/alarms/${encodeURIComponent(id)}/acknowledge`),
+
+  logs: () => apiGetCapability<CapabilityGap>('/logs'),
+  trace: () => apiGetCapability<CapabilityGap>('/trace'),
+  slowSubs: () => apiGetCapability<CapabilityGap>('/slow-subs'),
+  topicMetrics: (query?: ListQuery) => apiGet<TopicMetrics>('/topic-metrics', query),
+
+  cluster: () => apiGet<ClusterTopology>('/cluster'),
+  clusterJoin: () => clusterWrite('/cluster/join'),
+  clusterLeave: () => clusterWrite('/cluster/leave'),
+}
+
+/** GET that treats HTTP 501 + `{ available:false }` / details as an honest gap. */
+async function apiGetCapability<T>(path: string, params?: Record<string, unknown>): Promise<T> {
+  try {
+    return await apiGet<T>(path, params)
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 501) {
+      const gap = parseCapabilityGap(error.details) ?? parseCapabilityGap(error.data)
+      if (gap) return gap as T
+    }
+    throw error
+  }
+}
+
+async function clusterWrite(path: string): Promise<ClusterWriteResult> {
+  try {
+    const data = await apiPost<unknown>(path)
+    return parseClusterWriteResult(data) ?? { ok: true, available: true }
+  } catch (error) {
+    if (error instanceof ApiError && (error.status === 501 || error.status === 502)) {
+      const parsed = parseClusterWriteResult(error.details) ?? parseClusterWriteResult(error.data)
+      if (parsed) return parsed
+      return {
+        ok: false,
+        available: false,
+        message: error.message,
+        nodes: [],
+      }
+    }
+    throw error
+  }
 }
 
 export function asArray<T>(value: T | T[] | null | undefined): T[] {
