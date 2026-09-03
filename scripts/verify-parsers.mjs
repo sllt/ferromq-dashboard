@@ -19,11 +19,19 @@ const arr = parseListResponse([{ clientid: 'a' }, { clientid: 'b' }], headers, {
 assert('array + X-Row-Count/X-Truncated', arr.format === 'array' && arr.rowCount === 50 && arr.truncated === true && arr.items.length === 2)
 
 const page = parseListResponse(
-  { items: [{ topic: 't' }], row_count: 12, truncated: false, offset: 10, limit: 10 },
-  {},
+  { items: [{ topic: 't' }], offset: 10, limit: 10, truncated: false, total: 42 },
+  { 'x-row-count': '1' },
   { _limit: 10, offset: 10 },
 )
-assert('format=page body', page.format === 'page' && page.rowCount === 12 && page.offset === 10 && page.items[0].topic === 't')
+assert(
+  'format=page official',
+  page.format === 'page' &&
+    page.total === 42 &&
+    page.rowCount === 1 &&
+    page.offset === 10 &&
+    page.truncated === false &&
+    page.items[0].topic === 't',
+)
 
 const retains = parseListResponse({ items: [{ topic: 'a' }], has_more: true }, { 'X-Row-Count': '1' }, { limit: 50, offset: 0 })
 assert('retains {items,has_more}', retains.format === 'items' && retains.truncated === true && retains.items.length === 1)

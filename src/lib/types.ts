@@ -6,6 +6,7 @@ export type ApiEndpoint = {
 }
 
 export type BrokerInfo = {
+  ok?: boolean
   datetime?: string
   node_id: number
   node_name: string
@@ -17,6 +18,7 @@ export type BrokerInfo = {
 }
 
 export type NodeInfo = {
+  ok?: boolean
   boottime?: string
   connections?: number
   disk_free?: number
@@ -46,11 +48,13 @@ export type FeatureFlags = {
 
 export type FeatureNode = {
   node_id: number
-  node_name: string
-  features: FeatureFlags
+  node_name?: string
+  ok?: boolean
+  features?: FeatureFlags
+  error?: string
 }
 
-/** Unreachable nodes may appear as error strings (P1 FeaturesInfoOrError). */
+/** P2 `{ ok, error? }` or P1 bare error string. */
 export type FeatureNodeOrError = FeatureNode | string
 
 export type FeatureConflict = {
@@ -61,6 +65,10 @@ export type FeatureConflict = {
 export type FeaturesResponse = {
   consistent: boolean
   node_count: number
+  failed_count?: number
+  partial?: boolean
+  /** OR of flags across reachable nodes — preferred for menu gating. */
+  enabled?: FeatureFlags
   conflicts: FeatureConflict[]
   nodes: FeatureNodeOrError[]
 }
@@ -223,8 +231,10 @@ export type PluginInfo = {
 }
 
 export type NodePlugins = {
+  ok?: boolean
   node: number
   plugins: PluginInfo[]
+  error?: string
 }
 
 export type StatsNode = {

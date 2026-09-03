@@ -44,15 +44,12 @@ pnpm dev
 
 ## OpenAPI 与类型生成
 
-仓库内置 `openapi/openapi.json`（与当前 `/api/v1` 控制台表面一致的 stub）。`pnpm build` **不依赖** 实时 Broker。
+仓库内置 `openapi/openapi.json`，来自 FerroMQ P2（`GET /api/v1/openapi.json`，亦入库于 `ferromq-plugins/ferromq-http-api/openapi/openapi.json`）。`pnpm build` **不依赖** 实时 Broker。
 
 ```bash
-# 用 stub 生成 src/api/generated/schema.d.ts
-pnpm gen:api
-
-# Broker 已提供 GET /api/v1/openapi.json 时，刷新 stub 再生成
-# 等价于：curl localhost:6060/api/v1/openapi.json -o openapi/openapi.json
-pnpm gen:api:live
+pnpm gen:api          # 用入库 spec 生成 src/api/generated/schema.d.ts
+pnpm gen:api:live     # curl localhost:6060/api/v1/openapi.json 后生成
+# Swagger UI：GET /api/v1/docs
 ```
 
 详见 [openapi/README.md](./openapi/README.md)。

@@ -5,7 +5,10 @@ export type ListFormat = 'page' | 'items' | 'array'
 
 export type PageResult<T> = {
   items: T[]
+  /** Rows in this response (`X-Row-Count` / `items.length`). */
   rowCount: number
+  /** Official `Page.total` when the backend knows the full count. */
+  total?: number
   truncated: boolean
   offset: number
   limit: number
@@ -90,10 +93,10 @@ export function parseListResponse<T>(
   if (rec) {
     const items = pickItems<T>(rec)
     if (items) {
+      const total = typeof rec.total === 'number' ? rec.total : undefined
       const rowCount =
-        (typeof rec.row_count === 'number' ? rec.row_count : undefined) ??
-        (typeof rec.total === 'number' ? rec.total : undefined) ??
         headerCount ??
+        (typeof rec.row_count === 'number' ? rec.row_count : undefined) ??
         items.length
       const truncated =
         (typeof rec.truncated === 'boolean' ? rec.truncated : undefined) ??
@@ -103,10 +106,15 @@ export function parseListResponse<T>(
       const pageOffset = typeof rec.offset === 'number' ? rec.offset : offset
       const pageLimit = typeof rec.limit === 'number' ? rec.limit : limit
       const looksPaged =
-        rec.row_count != null || rec.truncated != null || rec.offset != null || rec.limit != null
+        rec.total != null ||
+        rec.truncated != null ||
+        rec.offset != null ||
+        rec.limit != null ||
+        rec.row_count != null
       return {
         items,
         rowCount,
+        total,
         truncated,
         offset: pageOffset,
         limit: pageLimit,
@@ -129,7 +137,10 @@ export function pagingParams(offset: number, limit: number): { _limit: number; o
   return { _limit: limit, offset, _offset: offset }
 }
 
-export function nextOffset(page: Pick<PageResult<unknown>, 'offset' | 'limit' | 'items' | 'truncated'>): number | null {
+export function nextOffset(
+  page: Pick<PageResult<unknown>, 'offset' | 'limit' | 'items' | 'truncated' | 'total'>,
+): number | null {
+  if (page.total != null && page.offset + page.items.length >= page.total) return null
   if (!page.truncated && page.items.length < page.limit) return null
   if (page.items.length === 0) return null
   return page.offset + page.limit

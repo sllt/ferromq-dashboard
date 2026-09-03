@@ -29,7 +29,7 @@ export function ListMeta<T>({ page, onOffsetChange, onLimitChange }: ListMetaPro
           {t('list.showing', {
             from: page.items.length === 0 ? 0 : page.offset + 1,
             to: page.offset + page.items.length,
-            total: page.rowCount,
+            total: page.total ?? page.rowCount,
           })}
         </span>
         <div className="flex items-center gap-2">

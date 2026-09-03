@@ -76,13 +76,16 @@ function toApiError(response: AxiosResponse): ApiError {
     typeof response.data === 'string' && response.data.trim() && !looksLikeHtml(response.data)
       ? response.data.trim().slice(0, 400)
       : ''
+  const headerId = response.headers?.['x-request-id']
+  const requestId =
+    parsed?.request_id ?? (typeof headerId === 'string' && headerId ? headerId : undefined)
   const message = parsed?.message?.trim() || raw || `HTTP ${response.status}`
   return new ApiError({
     status: response.status,
     message,
     code: parsed?.code ?? response.status,
     details: parsed?.details,
-    requestId: parsed?.request_id,
+    requestId,
     body: message,
     fromApi: Boolean(parsed?.message),
   })

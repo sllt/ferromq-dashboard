@@ -1,33 +1,34 @@
-# FerroMQ HTTP API OpenAPI stub
+# FerroMQ HTTP API OpenAPI
 
-This folder vendors an OpenAPI 3.1 document that mirrors the current
-FerroMQ dashboard surface (`/api/v1`).
+Vendored copy of the broker spec used by `pnpm gen:api`.
 
-CI and local `pnpm gen:api` read **this checked-in file**. Live broker
-codegen is optional and is **not** required for `pnpm build`.
+Upstream (dashboard/P2):
+`ferromq-plugins/ferromq-http-api/openapi/openapi.json`
+on branch `dashboard/p2-openapi-contract` ([ferromq#2](https://github.com/sllt/ferromq/pull/2)).
 
-## Refresh from a running broker
+Live broker:
 
-When `ferromq-http-api` serves `GET /api/v1/openapi.json` (dashboard/P2
-backend), replace the stub:
+- `GET /api/v1/openapi.json`
+- Swagger UI: `GET /api/v1/docs`
+
+## Refresh
 
 ```bash
-# default: http://127.0.0.1:6060/api/v1/openapi.json
+# from a running broker (preferred)
 pnpm gen:api:live
 
-# or manually
-curl -sf http://127.0.0.1:6060/api/v1/openapi.json -o openapi/openapi.json
+# or copy the checked-in broker file
+# curl -sfL https://raw.githubusercontent.com/sllt/ferromq/dashboard/p2-openapi-contract/ferromq-plugins/ferromq-http-api/openapi/openapi.json -o openapi/openapi.json
 pnpm gen:api
 ```
 
-`pnpm gen:api` always compiles `openapi/openapi.json` into
-`src/api/generated/schema.d.ts`. Commit both the spec and the generated
-types after a refresh.
+`pnpm gen:api` writes `src/api/generated/schema.d.ts`. Commit both files after a refresh. `pnpm build` does not need a live broker.
 
-## Error and list contract (P1 + P2)
+## Contract the dashboard relies on
 
-- Errors: JSON `{ "code", "message", "details"?, "request_id"? }`
-- List endpoints: `X-Row-Count` / `X-Truncated`
-- Paging aliases: `_limit` / `limit`, `_offset` / `offset`
-- Optional `?format=page` → `{ items, row_count?, truncated?, offset?, limit?, has_more? }`
-  The dashboard prefers this shape and falls back to a bare array.
+- Errors: `{ code, message, details?, request_id }` plus `X-Request-Id`
+- Lists: default bare arrays; `?format=page` → `{ items, offset, limit, truncated, total? }`
+- Headers: `X-Row-Count` / `X-Truncated`
+- Paging aliases: `_limit`/`limit`, `_offset`/`offset`
+- `/features`: `enabled` (OR across reachable nodes) for menu gating; `partial` / `failed_count`
+- Cluster aggregates: HTTP 200 with per-node `{ ok, error? }`

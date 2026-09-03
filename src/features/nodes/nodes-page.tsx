@@ -8,8 +8,8 @@ import { ErrorState, PageSkeleton } from '@/components/query-state'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { asArray, endpoints } from '@/lib/endpoints'
-import { FEATURE_KEYS, featureNodes } from '@/lib/features'
+import { endpoints } from '@/lib/endpoints'
+import { FEATURE_KEYS, featureFailures, featureNodes } from '@/lib/features'
 import type { HealthCheck, NodeHealth, NodeInfo } from '@/lib/types'
 import { formatBytes, formatLoad, formatNumber } from '@/lib/utils'
 
@@ -54,8 +54,9 @@ export function NodesPage() {
 
   const loading = nodesQ.isLoading || healthQ.isLoading || featuresQ.isLoading
   const error = nodesQ.error || healthQ.error || featuresQ.error
-  const nodes = asArray(nodesQ.data)
-  const brokers = asArray(brokersQ.data)
+  const nodes = nodesQ.data?.ok ?? []
+  const brokers = brokersQ.data?.ok ?? []
+  const clusterErrors = [...(nodesQ.data?.errors ?? []), ...(brokersQ.data?.errors ?? [])]
 
   const columns = useMemo<ColumnDef<NodeInfo>[]>(
     () => [
@@ -140,8 +141,12 @@ export function NodesPage() {
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               {t('nodes.features')}
-              <Badge variant={features?.consistent ? 'success' : 'warning'}>
-                {features?.consistent ? t('nodes.consistent') : t('nodes.inconsistent')}
+              <Badge variant={features?.consistent && !features?.partial ? 'success' : 'warning'}>
+                {features?.partial
+                  ? t('cluster.partial', { count: features.failed_count ?? featureFailures(features).length })
+                  : features?.consistent
+                    ? t('nodes.consistent')
+                    : t('nodes.inconsistent')}
               </Badge>
             </CardTitle>
           </CardHeader>
@@ -164,8 +169,8 @@ export function NodesPage() {
                       <td className="py-2 pr-3 font-mono">{n.node_name}</td>
                       {FEATURE_KEYS.map((k) => (
                         <td key={k} className="py-2 pr-3">
-                          <Badge variant={n.features[k] ? 'success' : 'secondary'}>
-                            {n.features[k] ? t('common.yes') : t('common.no')}
+                          <Badge variant={n.features?.[k] ? 'success' : 'secondary'}>
+                            {n.features?.[k] ? t('common.yes') : t('common.no')}
                           </Badge>
                         </td>
                       ))}
@@ -174,6 +179,11 @@ export function NodesPage() {
                 </tbody>
               </table>
             </div>
+            {featureFailures(features).map((f) => (
+              <div key={f.key} className="mt-2 text-xs text-amber-700 dark:text-amber-300">
+                {t('cluster.nodeFailed', { node: f.key, error: f.error })}
+              </div>
+            ))}
             {(features?.conflicts ?? []).length > 0 ? (
               <div className="mt-3 space-y-1 text-xs text-amber-600 dark:text-amber-400">
                 {features?.conflicts.map((c) => (
@@ -186,6 +196,14 @@ export function NodesPage() {
           </CardContent>
         </Card>
       </div>
+
+      {clusterErrors.length > 0 ? (
+        <div className="mb-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-800 dark:text-amber-300">
+          {clusterErrors.map((e) => (
+            <div key={e.key}>{t('cluster.nodeFailed', { node: e.key, error: e.error })}</div>
+          ))}
+        </div>
+      ) : null}
 
       <DataTable columns={columns} data={nodes} searchKey="node_name" />
 

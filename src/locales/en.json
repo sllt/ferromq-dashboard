@@ -84,7 +84,7 @@
     "requestId": "request id"
   },
   "list": {
-    "showing": "{{from}}–{{to}} of {{total}} on this page",
+    "showing": "{{from}}–{{to}} of {{total}}",
     "perPage": "{{count}} / page",
     "truncated": "Result truncated ({{count}} rows on this page). The broker set X-Truncated or format=page has_more.",
     "truncatedShort": "truncated",
@@ -95,6 +95,10 @@
     "unavailableTitle": "Capability unavailable",
     "unavailableHint": "This cluster does not enable {{feature}}. The matching nav item is disabled.",
     "sessionStorageHint": "Offline clients need session storage; the list may be empty."
+  },
+  "cluster": {
+    "partial": "{{count}} node(s) unreachable; results may be incomplete.",
+    "nodeFailed": "Node {{node}}: {{error}}"
   },
   "theme": {
     "light": "Light",

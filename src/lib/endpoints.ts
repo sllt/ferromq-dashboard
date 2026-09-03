@@ -1,4 +1,5 @@
 import { apiDelete, apiGet, apiPost, apiPut } from '@/lib/api'
+import { partitionCluster } from '@/lib/cluster'
 import { apiGetList, type ListQuery } from '@/lib/list'
 import type {
   ApiEndpoint,
@@ -27,10 +28,14 @@ import type {
 export const endpoints = {
   listApis: () => apiGet<ApiEndpoint[]>('/'),
   openapi: () => apiGet<Record<string, unknown>>('/openapi.json'),
-  brokers: async (node?: number) =>
-    asArray(await (node == null ? apiGet<BrokerInfo[] | BrokerInfo>('/brokers') : apiGet<BrokerInfo>(`/brokers/${node}`))),
-  nodes: async (node?: number) =>
-    asArray(await (node == null ? apiGet<NodeInfo[] | NodeInfo>('/nodes') : apiGet<NodeInfo>(`/nodes/${node}`))),
+  brokers: async (node?: number) => {
+    if (node != null) return { ok: [await apiGet<BrokerInfo>(`/brokers/${node}`)], errors: [] }
+    return partitionCluster<BrokerInfo>(await apiGet<BrokerInfo[] | BrokerInfo>('/brokers'))
+  },
+  nodes: async (node?: number) => {
+    if (node != null) return { ok: [await apiGet<NodeInfo>(`/nodes/${node}`)], errors: [] }
+    return partitionCluster<NodeInfo>(await apiGet<NodeInfo[] | NodeInfo>('/nodes'))
+  },
   features: () => apiGet<FeaturesResponse>('/features'),
   featuresNode: (node: number) => apiGet<FeatureNode>(`/features/${node}`),
   health: () => apiGet<HealthCheck>('/health/check'),

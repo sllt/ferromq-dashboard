@@ -18,7 +18,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ApiError } from '@/lib/api'
-import { asArray, endpoints } from '@/lib/endpoints'
+import { endpoints } from '@/lib/endpoints'
 import { useClusterFeatures } from '@/lib/features'
 import { formatNumber } from '@/lib/utils'
 import type { HistoryPoint } from '@/lib/types'
@@ -70,8 +70,9 @@ export function OverviewPage() {
 
   const stats = statsQ.data?.stats
   const metrics = metricsQ.data ?? {}
-  const nodes = asArray(nodesQ.data)
-  const brokers = asArray(brokersQ.data)
+  const nodes = nodesQ.data?.ok ?? []
+  const brokers = brokersQ.data?.ok ?? []
+  const clusterErrors = [...(nodesQ.data?.errors ?? []), ...(brokersQ.data?.errors ?? [])]
 
   const connSeries = useMemo(
     () => historySeries(histQ.data?.data, ['connections.count', 'sessions.count', 'subscriptions.count', 'topics.count']),
@@ -192,6 +193,11 @@ export function OverviewPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
+            {clusterErrors.length > 0 ? (
+              <p className="text-xs text-amber-700 dark:text-amber-300">
+                {t('cluster.partial', { count: clusterErrors.length })}
+              </p>
+            ) : null}
             {nodes.map((n) => (
               <div key={n.node_id} className="flex items-center justify-between rounded-lg border px-3 py-2">
                 <div>

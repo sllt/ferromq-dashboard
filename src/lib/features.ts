@@ -14,21 +14,36 @@ export const FEATURE_KEYS = [
 export type FeatureKey = (typeof FEATURE_KEYS)[number]
 
 export function isFeatureNode(value: unknown): value is FeatureNode {
-  return !!value && typeof value === 'object' && 'features' in value && 'node_id' in value
+  if (!value || typeof value !== 'object') return false
+  const rec = value as FeatureNode
+  if (rec.ok === false) return false
+  return rec.features != null && rec.node_id != null
 }
 
 export function featureNodes(data?: FeaturesResponse | null): FeatureNode[] {
   return (data?.nodes ?? []).filter(isFeatureNode)
 }
 
-/** A capability is available when any reachable node reports it. Fail-open if /features is missing. */
+export function featureFailures(data?: FeaturesResponse | null): Array<{ key: string; error: string }> {
+  return (data?.nodes ?? []).flatMap((node) => {
+    if (typeof node === 'string') return [{ key: node, error: node }]
+    if (node && typeof node === 'object' && node.ok === false) {
+      return [{ key: String(node.node_id ?? node.node_name ?? node.error), error: node.error ?? 'unavailable' }]
+    }
+    return []
+  })
+}
+
+/** Prefer P2 `enabled` (OR across reachable nodes). Fail-open only when /features is missing. */
 export function summarizeFlags(data?: FeaturesResponse | null): FeatureFlags {
-  const flags: FeatureFlags = {}
-  const nodes = featureNodes(data)
-  if (nodes.length === 0) {
+  if (!data) {
+    const flags: FeatureFlags = {}
     for (const key of FEATURE_KEYS) flags[key] = true
     return flags
   }
+  if (data.enabled) return data.enabled
+  const flags: FeatureFlags = {}
+  const nodes = featureNodes(data)
   for (const key of FEATURE_KEYS) {
     flags[key] = nodes.some((n) => n.features?.[key] === true)
   }
@@ -47,6 +62,7 @@ export function useClusterFeatures() {
     ...query,
     flags,
     nodes: featureNodes(query.data),
+    partial: query.data?.partial === true || (query.data?.failed_count ?? 0) > 0,
     has: (key: FeatureKey) => flags[key] !== false,
   }
 }

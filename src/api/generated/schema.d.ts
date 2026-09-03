@@ -4,14 +4,14 @@
  */
 
 export interface paths {
-    "/": {
+    "/api/v1": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** List available API endpoints */
+        /** List documented HTTP endpoints */
         get: operations["listApis"];
         put?: never;
         post?: never;
@@ -21,14 +21,14 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/openapi.json": {
+    "/api/v1/openapi.json": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** OpenAPI document (P2+) */
+        /** OpenAPI 3 document for /api/v1 */
         get: operations["getOpenApi"];
         put?: never;
         post?: never;
@@ -38,14 +38,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/brokers": {
+    "/api/v1/docs": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["listBrokers"];
+        /** Swagger UI for the OpenAPI document */
+        get: operations["getDocs"];
         put?: never;
         post?: never;
         delete?: never;
@@ -54,13 +55,31 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/brokers/{id}": {
+    "/api/v1/brokers": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
+        /** Basic information of every cluster node */
+        get: operations["getBrokers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/brokers/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Basic information of one node */
         get: operations["getBroker"];
         put?: never;
         post?: never;
@@ -70,14 +89,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/nodes": {
+    "/api/v1/nodes": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["listNodes"];
+        /** Status of every cluster node */
+        get: operations["getNodes"];
         put?: never;
         post?: never;
         delete?: never;
@@ -86,13 +106,14 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/nodes/{id}": {
+    "/api/v1/nodes/{id}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
+        /** Status of one node */
         get: operations["getNode"];
         put?: never;
         post?: never;
@@ -102,13 +123,17 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/features": {
+    "/api/v1/features": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
+        /**
+         * Cluster feature flags plus consistency summary (menu gating)
+         * @description `enabled` is the OR of each flag across reachable nodes and is intended for dashboard menu gating. `nodes[]` uses structured `{ ok, error? }` rather than a bare error string. Unreachable nodes increment `failed_count` and set `partial: true`.
+         */
         get: operations["getFeatures"];
         put?: never;
         post?: never;
@@ -118,14 +143,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/features/{id}": {
+    "/api/v1/features/{id}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["getFeaturesNode"];
+        /** Feature flags of one node */
+        get: operations["getFeature"];
         put?: never;
         post?: never;
         delete?: never;
@@ -134,14 +160,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/health/check": {
+    "/api/v1/health/check": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["healthCheck"];
+        /** Cluster health check */
+        get: operations["checkHealth"];
         put?: never;
         post?: never;
         delete?: never;
@@ -150,14 +177,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/health/check/{id}": {
+    "/api/v1/health/check/{id}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["healthCheckNode"];
+        /** Health check for one node */
+        get: operations["checkHealthNode"];
         put?: never;
         post?: never;
         delete?: never;
@@ -166,14 +194,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/clients": {
+    "/api/v1/clients": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["listClients"];
+        /** Search clients in the cluster */
+        get: operations["searchClients"];
         put?: never;
         post?: never;
         delete?: never;
@@ -182,46 +211,51 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/clients/offlines": {
+    "/api/v1/clients/offlines": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["listOfflines"];
+        /** Search offline clients */
+        get: operations["searchOfflines"];
         put?: never;
         post?: never;
+        /** Kick matching offline clients */
         delete: operations["kickOfflines"];
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/clients/{clientid}": {
+    "/api/v1/clients/{clientid}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
+        /** Get one client */
         get: operations["getClient"];
         put?: never;
         post?: never;
+        /** Kick a client */
         delete: operations["kickClient"];
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/clients/{clientid}/online": {
+    "/api/v1/clients/{clientid}/online": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["clientOnline"];
+        /** Whether a client is online */
+        get: operations["checkOnline"];
         put?: never;
         post?: never;
         delete?: never;
@@ -230,14 +264,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/subscriptions": {
+    "/api/v1/subscriptions": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["listSubscriptions"];
+        /** Query subscriptions */
+        get: operations["querySubscriptions"];
         put?: never;
         post?: never;
         delete?: never;
@@ -246,14 +281,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/subscriptions/{clientid}": {
+    "/api/v1/subscriptions/{clientid}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["listClientSubscriptions"];
+        /** Subscriptions of one client */
+        get: operations["getClientSubscriptions"];
         put?: never;
         post?: never;
         delete?: never;
@@ -262,14 +298,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/routes": {
+    "/api/v1/routes": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["listRoutes"];
+        /** Routing table snapshot */
+        get: operations["getRoutes"];
         put?: never;
         post?: never;
         delete?: never;
@@ -278,13 +315,14 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/routes/{topic}": {
+    "/api/v1/routes/{topic}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
+        /** Routes for one topic filter */
         get: operations["getRoute"];
         put?: never;
         post?: never;
@@ -294,23 +332,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/retains": {
+    "/api/v1/retains": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["listRetains"];
+        /**
+         * Query retained messages
+         * @description Default body is `{ items, has_more }`. `?format=page` adds `offset`, `limit`, `truncated`, and optional `total`.
+         */
+        get: operations["getRetains"];
         put?: never;
         post?: never;
+        /** Delete a retained message by exact topic */
         delete: operations["deleteRetain"];
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/mqtt/publish": {
+    "/api/v1/mqtt/publish": {
         parameters: {
             query?: never;
             header?: never;
@@ -319,14 +362,15 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["publish"];
+        /** Publish an MQTT message */
+        post: operations["mqttPublish"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/mqtt/subscribe": {
+    "/api/v1/mqtt/subscribe": {
         parameters: {
             query?: never;
             header?: never;
@@ -335,14 +379,15 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["subscribe"];
+        /** Subscribe a session to topics */
+        post: operations["mqttSubscribe"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/mqtt/unsubscribe": {
+    "/api/v1/mqtt/unsubscribe": {
         parameters: {
             query?: never;
             header?: never;
@@ -351,21 +396,26 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["unsubscribe"];
+        /** Unsubscribe a session from a topic */
+        post: operations["mqttUnsubscribe"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/plugins": {
+    "/api/v1/plugins": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["listPlugins"];
+        /**
+         * Plugins on every cluster node
+         * @description Default: array of `{ ok, node, plugins }` (or `{ ok: false, node, plugins: [], error }`). `?format=page` wraps the array.
+         */
+        get: operations["allPlugins"];
         put?: never;
         post?: never;
         delete?: never;
@@ -374,14 +424,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/plugins/{node}": {
+    "/api/v1/plugins/{node}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["listNodePlugins"];
+        /** Plugins on one node */
+        get: operations["nodePlugins"];
         put?: never;
         post?: never;
         delete?: never;
@@ -390,14 +441,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/plugins/{node}/{plugin}": {
+    "/api/v1/plugins/{node}/{plugin}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["getPlugin"];
+        /** One plugin on one node */
+        get: operations["nodePluginInfo"];
         put?: never;
         post?: never;
         delete?: never;
@@ -406,14 +458,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/plugins/{node}/{plugin}/config": {
+    "/api/v1/plugins/{node}/{plugin}/config": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["getPluginConfig"];
+        /** Read a plugin config (GET only in this milestone) */
+        get: operations["nodePluginConfig"];
         put?: never;
         post?: never;
         delete?: never;
@@ -422,7 +475,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/plugins/{node}/{plugin}/config/reload": {
+    "/api/v1/plugins/{node}/{plugin}/config/reload": {
         parameters: {
             query?: never;
             header?: never;
@@ -430,7 +483,8 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        put: operations["reloadPluginConfig"];
+        /** Reload a plugin config from disk */
+        put: operations["nodePluginConfigReload"];
         post?: never;
         delete?: never;
         options?: never;
@@ -438,7 +492,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/plugins/{node}/{plugin}/load": {
+    "/api/v1/plugins/{node}/{plugin}/load": {
         parameters: {
             query?: never;
             header?: never;
@@ -446,7 +500,8 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        put: operations["loadPlugin"];
+        /** Load / start a plugin on a node */
+        put: operations["nodePluginLoad"];
         post?: never;
         delete?: never;
         options?: never;
@@ -454,7 +509,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/plugins/{node}/{plugin}/unload": {
+    "/api/v1/plugins/{node}/{plugin}/unload": {
         parameters: {
             query?: never;
             header?: never;
@@ -462,7 +517,8 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        put: operations["unloadPlugin"];
+        /** Unload / stop a plugin on a node */
+        put: operations["nodePluginUnload"];
         post?: never;
         delete?: never;
         options?: never;
@@ -470,14 +526,18 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/stats": {
+    "/api/v1/stats": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["listStats"];
+        /**
+         * Per-node stats for the cluster
+         * @description Array of `{ ok: true, node, stats }` or `{ ok: false, node, error }`.
+         */
+        get: operations["getStats"];
         put?: never;
         post?: never;
         delete?: never;
@@ -486,14 +546,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/stats/sum": {
+    "/api/v1/stats/sum": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["statsSum"];
+        /** Aggregated cluster stats */
+        get: operations["getStatsSum"];
         put?: never;
         post?: never;
         delete?: never;
@@ -502,14 +563,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/stats/history": {
+    "/api/v1/stats/{id}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["statsHistory"];
+        /** Stats for one node */
+        get: operations["getStatsNode"];
         put?: never;
         post?: never;
         delete?: never;
@@ -518,14 +580,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/stats/history/sum": {
+    "/api/v1/stats/sys": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["statsHistorySum"];
+        /** Per-node system stats */
+        get: operations["getSysStats"];
         put?: never;
         post?: never;
         delete?: never;
@@ -534,14 +597,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/metrics": {
+    "/api/v1/stats/sys/sum": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["listMetrics"];
+        /** Aggregated system stats */
+        get: operations["getSysStatsSum"];
         put?: never;
         post?: never;
         delete?: never;
@@ -550,14 +614,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/metrics/sum": {
+    "/api/v1/stats/sys/{id}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["metricsSum"];
+        /** System stats for one node */
+        get: operations["getSysStatsNode"];
         put?: never;
         post?: never;
         delete?: never;
@@ -566,14 +631,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/metrics/history": {
+    "/api/v1/stats/history": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["metricsHistory"];
+        /** Historical stats (all nodes) */
+        get: operations["getStatsHistory"];
         put?: never;
         post?: never;
         delete?: never;
@@ -582,14 +648,185 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/metrics/history/sum": {
+    "/api/v1/stats/history/sum": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["metricsHistorySum"];
+        /** Aggregated historical stats */
+        get: operations["getStatsHistorySum"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/stats/history/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Historical stats for one node */
+        get: operations["getStatsHistoryNode"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/metrics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Per-node metrics for the cluster */
+        get: operations["getMetrics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/metrics/sum": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Aggregated cluster metrics */
+        get: operations["getMetricsSum"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/metrics/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Metrics for one node */
+        get: operations["getMetricsNode"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/metrics/prometheus": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Prometheus text exposition (all nodes) */
+        get: operations["getPrometheusMetrics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/metrics/prometheus/sum": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Aggregated Prometheus text */
+        get: operations["getPrometheusMetricsSum"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/metrics/prometheus/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Prometheus text for one node */
+        get: operations["getPrometheusMetricsNode"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/metrics/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Historical metrics (all nodes) */
+        get: operations["getMetricsHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/metrics/history/sum": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Aggregated historical metrics */
+        get: operations["getMetricsHistorySum"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/metrics/history/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Historical metrics for one node */
+        get: operations["getMetricsHistoryNode"];
         put?: never;
         post?: never;
         delete?: never;
@@ -602,108 +839,133 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        ApiError: {
-            /** @description HTTP status or stable error code */
-            code: number | string;
+        Error: {
+            /** @description Same value as the HTTP status code */
+            code: number;
             message: string;
+            /** @description Optional structured extras */
             details?: unknown;
+            /** @description Correlation id (also in X-Request-Id) */
             request_id?: string;
         };
+        Page: {
+            items: unknown[];
+            offset: number;
+            limit: number;
+            truncated: boolean;
+            /** @description Present only when the backend knows the full count */
+            total?: number;
+        };
+        ClusterNodeError: {
+            /** @enum {boolean} */
+            ok: false;
+            /** Format: int64 */
+            node_id?: number;
+            /** @description Present on stats/metrics (`{ id }`) and plugins (`integer`) */
+            node?: unknown;
+            error: string;
+            /** @description Empty array on plugin-group failures */
+            plugins?: unknown[];
+        };
         ApiEndpoint: {
-            path?: string;
-            name?: string;
-            method?: string;
-            descr?: string;
+            name: string;
+            method: string;
+            path: string;
+            descr: string;
         };
         BrokerInfo: {
+            ok?: boolean;
+            /** Format: int64 */
+            node_id?: number;
+            node_name?: string;
             datetime?: string;
+            running?: boolean;
+            version?: string;
+            rustc_version?: string;
+            uptime?: string;
+        } & {
+            [key: string]: unknown;
+        };
+        NodeInfo: {
+            ok?: boolean;
+            /** Format: int64 */
             node_id?: number;
             node_name?: string;
             running?: boolean;
-            sysdescr?: string;
+            connections?: number;
+            boottime?: string;
             uptime?: string;
             version?: string;
-            rustc_version?: string;
-        };
-        NodeInfo: {
-            boottime?: string;
-            connections?: number;
-            disk_free?: number;
-            disk_total?: number;
+            memory_used?: number;
+            memory_total?: number;
             load1?: number;
             load5?: number;
             load15?: number;
-            memory_free?: number;
-            memory_total?: number;
-            memory_used?: number;
-            node_id?: number;
-            node_name?: string;
-            running?: boolean;
-            uptime?: string;
-            version?: string;
-            rustc_version?: string;
+        } & {
+            [key: string]: unknown;
         };
-        FeatureFlags: {
-            retain?: boolean;
-            message_storage?: boolean;
-            session_storage?: boolean;
-            delayed?: boolean;
-            shared_subscription?: boolean;
-            auto_subscription?: boolean;
+        /** @description Runtime capability flags. A flag is true when the backing implementation is loaded and enabled. Used by the dashboard for menu gating via FeaturesSummary.enabled. */
+        Features: {
+            /** @description Retained messages (`ferromq-retainer`). Gates the Retains menu. */
+            retain: boolean;
+            /** @description Persistent message storage (`ferromq-message-storage`). */
+            message_storage: boolean;
+            /** @description Persistent session storage (`ferromq-session-storage`). */
+            session_storage: boolean;
+            /** @description Delayed publish (`$delayed/...`). */
+            delayed: boolean;
+            /** @description Shared subscriptions `$share`. */
+            shared_subscription: boolean;
+            /** @description Automatic subscriptions plugin. */
+            auto_subscription: boolean;
         };
-        FeatureNode: {
-            node_id?: number;
+        FeaturesInfo: {
+            /** Format: int64 */
+            node_id: number;
+            node_name: string;
+            features: components["schemas"]["Features"];
+        };
+        FeaturesNodeResult: {
+            /** Format: int64 */
+            node_id: number;
             node_name?: string;
-            features?: components["schemas"]["FeatureFlags"];
+            ok: boolean;
+            features?: components["schemas"]["Features"];
+            error?: string;
+        };
+        FeatureValueGroup: {
+            value: boolean;
+            node_ids: number[];
         };
         FeatureConflict: {
-            feature?: string;
-            values?: {
-                value?: boolean;
-                node_ids?: number[];
-            }[];
+            feature: string;
+            values: components["schemas"]["FeatureValueGroup"][];
         };
-        FeaturesResponse: {
-            consistent?: boolean;
-            node_count?: number;
+        FeaturesSummary: {
+            consistent: boolean;
+            node_count: number;
+            failed_count: number;
+            partial: boolean;
+            enabled: components["schemas"]["Features"];
             conflicts?: components["schemas"]["FeatureConflict"][];
-            nodes?: (components["schemas"]["FeatureNode"] | string)[];
+            nodes: components["schemas"]["FeaturesNodeResult"][];
         };
-        NodeHealth: {
-            node_id?: number;
-            name?: string;
-            running?: boolean;
-            uptime?: string;
-            status?: string;
-            leader_id?: number;
-            descr?: string;
+        HealthStatus: {
+            [key: string]: unknown;
         };
-        HealthCheck: {
-            status?: string;
-            running?: boolean;
-            descr?: string;
-            nodes?: components["schemas"]["NodeHealth"][] | {
-                [key: string]: components["schemas"]["NodeHealth"];
-            };
-        };
-        LastWill: {
-            message?: string;
-            qos?: number;
-            retain?: boolean;
-            topic?: string;
-        };
-        ClientInfo: {
+        ClientSearchResult: {
+            /** Format: int64 */
             node_id?: number;
             clientid?: string;
             username?: string;
             superuser?: boolean;
             proto_ver?: number;
-            ip_address?: string;
-            port?: number;
+            ip_address?: string | null;
+            port?: number | null;
+            connected?: boolean;
             connected_at?: string;
             disconnected_at?: string;
             disconnected_reason?: string;
-            connected?: boolean;
             keepalive?: number;
             clean_start?: boolean;
             session_present?: boolean;
@@ -711,270 +973,260 @@ export interface components {
             created_at?: string;
             subscriptions_cnt?: number;
             max_subscriptions?: number;
+            last_will?: unknown;
             inflight?: number;
             max_inflight?: number;
             mqueue_len?: number;
             max_mqueue?: number;
-            last_will?: components["schemas"]["LastWill"] | null;
+        } & {
+            [key: string]: unknown;
         };
-        PageMeta: {
-            row_count?: number;
-            truncated?: boolean;
-            offset?: number;
-            limit?: number;
-            has_more?: boolean;
-        };
-        ClientPage: components["schemas"]["PageMeta"] & {
-            items: components["schemas"]["ClientInfo"][];
-        };
-        SubscriptionInfo: {
+        Subscription: {
+            /** Format: int64 */
             node_id?: number;
             clientid?: string;
-            client_addr?: string;
             topic?: string;
-            qos?: number;
-            share?: string | null;
+            /** @description Documented alias of opts.qos */
+            qos?: unknown;
+            /** @description Documented alias of opts.group */
+            share?: unknown;
             opts?: {
                 [key: string]: unknown;
             };
+        } & {
+            [key: string]: unknown;
         };
-        SubscriptionPage: components["schemas"]["PageMeta"] & {
-            items: components["schemas"]["SubscriptionInfo"][];
-        };
-        RouteInfo: {
-            topic?: string;
-            node_id?: number;
-        };
-        RoutePage: components["schemas"]["PageMeta"] & {
-            items: components["schemas"]["RouteInfo"][];
-        };
-        RetainFrom: {
-            typ?: string;
-            id?: {
-                node_id?: number;
-                client_id?: string;
-            };
-        };
-        RetainPublish: {
+        RetainPublishInfo: {
             topic?: string;
             qos?: number;
             retain?: boolean;
             dup?: boolean;
+            /** @description Base64 payload */
             payload?: string;
-            create_time?: number;
+            create_time?: number | null;
+            properties?: unknown;
+        };
+        RetainInfo: {
+            topic?: string;
+            msg_id?: unknown;
+            from?: unknown;
+            publish?: components["schemas"]["RetainPublishInfo"];
+            remaining_ttl?: number | null;
+            client_id?: string | null;
+        };
+        RetainPage: {
+            items: components["schemas"]["RetainInfo"][];
+            has_more: boolean;
+            offset?: number;
+            limit?: number;
+            truncated?: boolean;
+            total?: number;
+        };
+        PublishParams: {
+            topic?: string;
+            /** @description Comma-separated topics */
+            topics?: string;
+            /** @default system */
+            clientid: string;
+            payload: string;
+            /**
+             * @default plain
+             * @enum {string}
+             */
+            encoding: "plain" | "base64";
+            /** @default 0 */
+            qos: number;
+            /** @default false */
+            retain: boolean;
             properties?: {
                 [key: string]: unknown;
-            } | null;
-        };
-        RetainItem: {
-            topic?: string;
-            msg_id?: number;
-            from?: components["schemas"]["RetainFrom"];
-            publish?: components["schemas"]["RetainPublish"];
-            remaining_ttl?: number | null;
-            client_id?: string;
-        };
-        RetainPage: components["schemas"]["PageMeta"] & {
-            items: components["schemas"]["RetainItem"][];
-            has_more?: boolean;
-        };
-        PublishRequest: {
-            topic?: string;
-            topics?: string;
-            clientid?: string;
-            payload: string;
-            /** @enum {string} */
-            encoding?: "plain" | "base64";
-            qos?: number;
-            retain?: boolean;
-            properties?: {
-                message_expiry_interval?: number;
-                topic_alias?: number;
-                response_topic?: string;
-                correlation_data?: string;
-                user_properties?: {
-                    [key: string]: string;
-                };
             };
         };
-        SubscribeRequest: {
+        SubscribeParams: {
             topic?: string;
             topics?: string;
             clientid: string;
-            qos?: number;
+            /** @default 0 */
+            qos: number;
         };
-        UnsubscribeRequest: {
+        UnsubscribeParams: {
             topic: string;
             clientid: string;
         };
-        KickCount: {
-            count?: number;
-        };
         PluginInfo: {
-            name?: string;
+            name: string;
             version?: string | null;
             descr?: string | null;
-            authors?: string | string[] | null;
-            homepage?: string | null;
-            license?: string | null;
-            repository?: string | null;
-            active?: boolean;
-            inited?: boolean;
-            immutable?: boolean;
+            inited: boolean;
+            /** @description Canonical running flag (not `running`) */
+            active: boolean;
+            immutable: boolean;
             attrs?: unknown;
+        } & {
+            [key: string]: unknown;
         };
-        NodePlugins: {
-            node?: number;
-            plugins?: components["schemas"]["PluginInfo"][];
-        };
-        PluginClusterPage: components["schemas"]["PageMeta"] & {
-            items: components["schemas"]["NodePlugins"][];
+        PluginNodeGroup: {
+            ok: boolean;
+            /** Format: int64 */
+            node: number;
+            plugins: components["schemas"]["PluginInfo"][];
+            error?: string;
         };
         StatsNode: {
-            id?: number;
-            name?: string;
-            running?: boolean;
-        };
-        NodeStats: {
-            node?: components["schemas"]["StatsNode"];
-            stats?: {
-                [key: string]: number;
-            };
-        };
-        StatsSum: {
-            nodes?: {
-                [key: string]: {
-                    name?: string;
-                    running?: boolean;
-                };
-            };
-            stats?: {
-                [key: string]: number;
-            };
-        };
-        HistoryPoint: {
-            ts?: number;
-        } & {
-            [key: string]: number;
-        };
-        HistoryNode: {
-            from?: number;
-            to?: number;
-            node?: number;
-            count?: number;
-            data?: components["schemas"]["HistoryPoint"][];
-        };
-        HistoryCluster: {
-            from?: number;
-            to?: number;
-            nodes?: {
-                [key: string]: components["schemas"]["HistoryNode"];
-            };
-        };
-        HistorySum: {
-            from?: number;
-            to?: number;
-            node_count?: number;
-            count?: number;
-            data?: components["schemas"]["HistoryPoint"][];
-        };
-        NodeMetrics: {
+            ok?: boolean;
             node?: {
+                /** Format: int64 */
+                id?: number;
+                name?: string;
+                running?: boolean;
+            };
+            stats?: {
+                [key: string]: unknown;
+            };
+            error?: string;
+        };
+        MetricsNode: {
+            ok?: boolean;
+            node?: {
+                /** Format: int64 */
                 id?: number;
                 name?: string;
             };
             metrics?: {
-                [key: string]: number;
+                [key: string]: unknown;
             };
+            error?: string;
+        };
+        HistoryData: {
+            /** Format: int64 */
+            node?: number;
+            /** Format: int64 */
+            from?: number;
+            /** Format: int64 */
+            to?: number;
+            count?: number;
+            data?: {
+                [key: string]: unknown;
+            }[];
         };
     };
     responses: {
-        /** @description JSON error `{code,message,details?,request_id?}` */
-        Error: {
+        /** @description Invalid request */
+        BadRequest: {
             headers: {
+                "X-Request-Id": components["headers"]["XRequestId"];
                 [name: string]: unknown;
             };
             content: {
-                "application/json": components["schemas"]["ApiError"];
+                "application/json": components["schemas"]["Error"];
             };
         };
-        /** @description Bare array (P1) or `{items,...}` when `format=page` */
+        /** @description Missing or invalid bearer token */
+        Unauthorized: {
+            headers: {
+                "X-Request-Id": components["headers"]["XRequestId"];
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["Error"];
+            };
+        };
+        /** @description Resource not found */
+        NotFound: {
+            headers: {
+                "X-Request-Id": components["headers"]["XRequestId"];
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["Error"];
+            };
+        };
+        /** @description Backend / peer unavailable */
+        Unavailable: {
+            headers: {
+                "X-Request-Id": components["headers"]["XRequestId"];
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["Error"];
+            };
+        };
+        /** @description Bare array by default; `{ items, ... }` when `format=page`. */
         ClientList: {
             headers: {
-                "X-Row-Count": components["headers"]["X-Row-Count"];
-                "X-Truncated": components["headers"]["X-Truncated"];
+                "X-Row-Count": components["headers"]["XRowCount"];
+                "X-Truncated": components["headers"]["XTruncated"];
                 [name: string]: unknown;
             };
             content: {
-                "application/json": components["schemas"]["ClientInfo"][] | components["schemas"]["ClientPage"];
+                "application/json": components["schemas"]["ClientSearchResult"][] | components["schemas"]["Page"];
             };
         };
-        /** @description Bare array or page */
+        /** @description Bare array by default; page envelope when `format=page`. */
         SubscriptionList: {
             headers: {
-                "X-Row-Count": components["headers"]["X-Row-Count"];
-                "X-Truncated": components["headers"]["X-Truncated"];
+                "X-Row-Count": components["headers"]["XRowCount"];
+                "X-Truncated": components["headers"]["XTruncated"];
                 [name: string]: unknown;
             };
             content: {
-                "application/json": components["schemas"]["SubscriptionInfo"][] | components["schemas"]["SubscriptionPage"];
+                "application/json": components["schemas"]["Subscription"][] | components["schemas"]["Page"];
             };
         };
-        /** @description Bare array or page */
+        /** @description Bare array by default; page envelope when `format=page`. */
         RouteList: {
             headers: {
-                "X-Row-Count": components["headers"]["X-Row-Count"];
-                "X-Truncated": components["headers"]["X-Truncated"];
+                "X-Row-Count": components["headers"]["XRowCount"];
+                "X-Truncated": components["headers"]["XTruncated"];
                 [name: string]: unknown;
             };
             content: {
-                "application/json": components["schemas"]["RouteInfo"][] | components["schemas"]["RoutePage"];
+                "application/json": {
+                    [key: string]: unknown;
+                }[] | components["schemas"]["Page"];
             };
         };
-        /** @description `{items,has_more}` or `format=page` */
-        RetainList: {
+        /** @description Bare plugin array by default; page envelope when `format=page`. */
+        PluginList: {
             headers: {
-                "X-Row-Count": components["headers"]["X-Row-Count"];
-                "X-Truncated": components["headers"]["X-Truncated"];
+                "X-Row-Count": components["headers"]["XRowCount"];
+                "X-Truncated": components["headers"]["XTruncated"];
                 [name: string]: unknown;
             };
             content: {
-                "application/json": components["schemas"]["RetainPage"] | components["schemas"]["RetainItem"][];
-            };
-        };
-        /** @description Cluster plugin inventory */
-        PluginClusterList: {
-            headers: {
-                "X-Row-Count": components["headers"]["X-Row-Count"];
-                "X-Truncated": components["headers"]["X-Truncated"];
-                [name: string]: unknown;
-            };
-            content: {
-                "application/json": components["schemas"]["NodePlugins"][] | components["schemas"]["PluginClusterPage"];
+                "application/json": components["schemas"]["PluginInfo"][] | components["schemas"]["Page"];
             };
         };
     };
     parameters: {
         NodeId: number;
-        NodeIdPath: number;
         ClientId: string;
+        PluginNode: number;
         PluginName: string;
+        /** @description Max rows. `0` or omitted uses plugin `max_row_limit` (default 10000). */
         Limit: number;
+        /** @description Alias of `_limit` (used by `/retains` as the canonical name). */
         LimitAlias: number;
+        /** @description Rows to skip after the backend fetch. */
         Offset: number;
+        /** @description Alias of `_offset`. */
         OffsetAlias: number;
-        /** @description P2: `page` wraps list bodies as {items,row_count,truncated}. Ignored by P1 brokers. */
-        Format: "page";
-        HistoryQuery: {
-            [key: string]: unknown;
-        };
+        /** @description Set to `page` to wrap a list as `{ items, offset, limit, truncated, total? }` instead of a bare array. Default is the historical array body. */
+        FormatPage: "page";
+        /** @description Start timestamp (milliseconds, inclusive) */
+        HistoryFrom: number;
+        /** @description End timestamp (milliseconds, inclusive) */
+        HistoryTo: number;
+        HistoryLimit: number;
     };
     requestBodies: never;
     headers: {
-        /** @description Rows in this response body */
-        "X-Row-Count": number;
-        /** @description `true` when `_limit` / max_row_limit cut the result */
-        "X-Truncated": boolean;
+        /** @description Number of rows in this response (`items.length` for page / retains). */
+        XRowCount: number;
+        /** @description `true` when the result was cut off by `_limit` / `max_row_limit`. */
+        XTruncated: boolean;
+        /** @description Correlation id. Echoed from the request header when present. */
+        XRequestId: string;
     };
     pathItems: never;
 }
@@ -998,7 +1250,6 @@ export interface operations {
                     "application/json": components["schemas"]["ApiEndpoint"][];
                 };
             };
-            401: components["responses"]["Error"];
         };
     };
     getOpenApi: {
@@ -1010,21 +1261,18 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OpenAPI 3 document */
+            /** @description OpenAPI 3.0.3 JSON */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": Record<string, never>;
                 };
             };
-            404: components["responses"]["Error"];
         };
     };
-    listBrokers: {
+    getDocs: {
         parameters: {
             query?: never;
             header?: never;
@@ -1033,16 +1281,37 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Brokers */
+            /** @description HTML docs page */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["BrokerInfo"][] | components["schemas"]["BrokerInfo"];
+                    "text/html": string;
                 };
             };
-            401: components["responses"]["Error"];
+        };
+    };
+    getBrokers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Per-node broker objects; failed peers are ClusterNodeError */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": (components["schemas"]["BrokerInfo"] | components["schemas"]["ClusterNodeError"])[];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            503: components["responses"]["Unavailable"];
         };
     };
     getBroker: {
@@ -1056,7 +1325,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Broker */
+            /** @description Broker info */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1065,10 +1334,12 @@ export interface operations {
                     "application/json": components["schemas"]["BrokerInfo"];
                 };
             };
-            404: components["responses"]["Error"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            503: components["responses"]["Unavailable"];
         };
     };
-    listNodes: {
+    getNodes: {
         parameters: {
             query?: never;
             header?: never;
@@ -1077,16 +1348,17 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Nodes */
+            /** @description Per-node status; failed peers are ClusterNodeError */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["NodeInfo"][] | components["schemas"]["NodeInfo"];
+                    "application/json": (components["schemas"]["NodeInfo"] | components["schemas"]["ClusterNodeError"])[];
                 };
             };
-            401: components["responses"]["Error"];
+            401: components["responses"]["Unauthorized"];
+            503: components["responses"]["Unavailable"];
         };
     };
     getNode: {
@@ -1100,7 +1372,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Node */
+            /** @description Node status */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1109,7 +1381,9 @@ export interface operations {
                     "application/json": components["schemas"]["NodeInfo"];
                 };
             };
-            404: components["responses"]["Error"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            503: components["responses"]["Unavailable"];
         };
     };
     getFeatures: {
@@ -1121,19 +1395,20 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Cluster feature summary */
+            /** @description Features summary */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["FeaturesResponse"];
+                    "application/json": components["schemas"]["FeaturesSummary"];
                 };
             };
-            401: components["responses"]["Error"];
+            401: components["responses"]["Unauthorized"];
+            503: components["responses"]["Unavailable"];
         };
     };
-    getFeaturesNode: {
+    getFeature: {
         parameters: {
             query?: never;
             header?: never;
@@ -1144,19 +1419,21 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Node features */
+            /** @description Single-node features */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["FeatureNode"];
+                    "application/json": components["schemas"]["FeaturesInfo"];
                 };
             };
-            404: components["responses"]["Error"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            503: components["responses"]["Unavailable"];
         };
     };
-    healthCheck: {
+    checkHealth: {
         parameters: {
             query?: never;
             header?: never;
@@ -1165,18 +1442,20 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Cluster health */
+            /** @description Health status */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HealthCheck"];
+                    "application/json": components["schemas"]["HealthStatus"];
                 };
             };
+            401: components["responses"]["Unauthorized"];
+            503: components["responses"]["Unavailable"];
         };
     };
-    healthCheckNode: {
+    checkHealthNode: {
         parameters: {
             query?: never;
             header?: never;
@@ -1187,27 +1466,33 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Node health */
+            /** @description Health status */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["NodeHealth"];
+                    "application/json": components["schemas"]["HealthStatus"];
                 };
             };
-            404: components["responses"]["Error"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            503: components["responses"]["Unavailable"];
         };
     };
-    listClients: {
+    searchClients: {
         parameters: {
             query?: {
+                /** @description Max rows. `0` or omitted uses plugin `max_row_limit` (default 10000). */
                 _limit?: components["parameters"]["Limit"];
+                /** @description Alias of `_limit` (used by `/retains` as the canonical name). */
                 limit?: components["parameters"]["LimitAlias"];
+                /** @description Rows to skip after the backend fetch. */
                 _offset?: components["parameters"]["Offset"];
+                /** @description Alias of `_offset`. */
                 offset?: components["parameters"]["OffsetAlias"];
-                /** @description P2: `page` wraps list bodies as {items,row_count,truncated}. Ignored by P1 brokers. */
-                format?: components["parameters"]["Format"];
+                /** @description Set to `page` to wrap a list as `{ items, offset, limit, truncated, total? }` instead of a bare array. Default is the historical array body. */
+                format?: components["parameters"]["FormatPage"];
                 clientid?: string;
                 username?: string;
                 ip_address?: string;
@@ -1217,12 +1502,6 @@ export interface operations {
                 proto_ver?: number;
                 _like_clientid?: string;
                 _like_username?: string;
-                _gte_created_at?: string;
-                _lte_created_at?: string;
-                _gte_connected_at?: string;
-                _lte_connected_at?: string;
-                _gte_mqueue_len?: number;
-                _lte_mqueue_len?: number;
             };
             header?: never;
             path?: never;
@@ -1231,23 +1510,24 @@ export interface operations {
         requestBody?: never;
         responses: {
             200: components["responses"]["ClientList"];
-            400: components["responses"]["Error"];
-            401: components["responses"]["Error"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            503: components["responses"]["Unavailable"];
         };
     };
-    listOfflines: {
+    searchOfflines: {
         parameters: {
             query?: {
+                /** @description Max rows. `0` or omitted uses plugin `max_row_limit` (default 10000). */
                 _limit?: components["parameters"]["Limit"];
+                /** @description Alias of `_limit` (used by `/retains` as the canonical name). */
                 limit?: components["parameters"]["LimitAlias"];
+                /** @description Rows to skip after the backend fetch. */
                 _offset?: components["parameters"]["Offset"];
+                /** @description Alias of `_offset`. */
                 offset?: components["parameters"]["OffsetAlias"];
-                /** @description P2: `page` wraps list bodies as {items,row_count,truncated}. Ignored by P1 brokers. */
-                format?: components["parameters"]["Format"];
-                clientid?: string;
-                username?: string;
-                _like_clientid?: string;
-                _like_username?: string;
+                /** @description Set to `page` to wrap a list as `{ items, offset, limit, truncated, total? }` instead of a bare array. Default is the historical array body. */
+                format?: components["parameters"]["FormatPage"];
             };
             header?: never;
             path?: never;
@@ -1256,33 +1536,32 @@ export interface operations {
         requestBody?: never;
         responses: {
             200: components["responses"]["ClientList"];
-            401: components["responses"]["Error"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            503: components["responses"]["Unavailable"];
         };
     };
     kickOfflines: {
         parameters: {
-            query?: {
-                clientid?: string;
-                username?: string;
-                _like_clientid?: string;
-                _like_username?: string;
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Kicked count */
+            /** @description Kick count */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["KickCount"];
+                    "application/json": {
+                        count: number;
+                    };
                 };
             };
-            401: components["responses"]["Error"];
+            401: components["responses"]["Unauthorized"];
         };
     };
     getClient: {
@@ -1302,10 +1581,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ClientInfo"];
+                    "application/json": components["schemas"]["ClientSearchResult"];
                 };
             };
-            404: components["responses"]["Error"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            503: components["responses"]["Unavailable"];
         };
     };
     kickClient: {
@@ -1319,19 +1600,22 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Kicked */
+            /** @description Kicked session id */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": string;
+                    "application/json": Record<string, never>;
                 };
             };
-            404: components["responses"]["Error"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            503: components["responses"]["Unavailable"];
         };
     };
-    clientOnline: {
+    checkOnline: {
         parameters: {
             query?: never;
             header?: never;
@@ -1351,23 +1635,25 @@ export interface operations {
                     "application/json": boolean;
                 };
             };
-            404: components["responses"]["Error"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
         };
     };
-    listSubscriptions: {
+    querySubscriptions: {
         parameters: {
             query?: {
+                /** @description Max rows. `0` or omitted uses plugin `max_row_limit` (default 10000). */
                 _limit?: components["parameters"]["Limit"];
+                /** @description Alias of `_limit` (used by `/retains` as the canonical name). */
                 limit?: components["parameters"]["LimitAlias"];
+                /** @description Rows to skip after the backend fetch. */
                 _offset?: components["parameters"]["Offset"];
+                /** @description Alias of `_offset`. */
                 offset?: components["parameters"]["OffsetAlias"];
-                /** @description P2: `page` wraps list bodies as {items,row_count,truncated}. Ignored by P1 brokers. */
-                format?: components["parameters"]["Format"];
+                /** @description Set to `page` to wrap a list as `{ items, offset, limit, truncated, total? }` instead of a bare array. Default is the historical array body. */
+                format?: components["parameters"]["FormatPage"];
                 clientid?: string;
                 topic?: string;
-                qos?: number;
-                share?: string;
-                _match_topic?: string;
             };
             header?: never;
             path?: never;
@@ -1376,14 +1662,15 @@ export interface operations {
         requestBody?: never;
         responses: {
             200: components["responses"]["SubscriptionList"];
-            401: components["responses"]["Error"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
         };
     };
-    listClientSubscriptions: {
+    getClientSubscriptions: {
         parameters: {
             query?: {
-                /** @description P2: `page` wraps list bodies as {items,row_count,truncated}. Ignored by P1 brokers. */
-                format?: components["parameters"]["Format"];
+                /** @description Set to `page` to wrap a list as `{ items, offset, limit, truncated, total? }` instead of a bare array. Default is the historical array body. */
+                format?: components["parameters"]["FormatPage"];
             };
             header?: never;
             path: {
@@ -1394,18 +1681,23 @@ export interface operations {
         requestBody?: never;
         responses: {
             200: components["responses"]["SubscriptionList"];
-            404: components["responses"]["Error"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
         };
     };
-    listRoutes: {
+    getRoutes: {
         parameters: {
             query?: {
+                /** @description Max rows. `0` or omitted uses plugin `max_row_limit` (default 10000). */
                 _limit?: components["parameters"]["Limit"];
+                /** @description Alias of `_limit` (used by `/retains` as the canonical name). */
                 limit?: components["parameters"]["LimitAlias"];
+                /** @description Rows to skip after the backend fetch. */
                 _offset?: components["parameters"]["Offset"];
+                /** @description Alias of `_offset`. */
                 offset?: components["parameters"]["OffsetAlias"];
-                /** @description P2: `page` wraps list bodies as {items,row_count,truncated}. Ignored by P1 brokers. */
-                format?: components["parameters"]["Format"];
+                /** @description Set to `page` to wrap a list as `{ items, offset, limit, truncated, total? }` instead of a bare array. Default is the historical array body. */
+                format?: components["parameters"]["FormatPage"];
             };
             header?: never;
             path?: never;
@@ -1414,14 +1706,14 @@ export interface operations {
         requestBody?: never;
         responses: {
             200: components["responses"]["RouteList"];
-            401: components["responses"]["Error"];
+            401: components["responses"]["Unauthorized"];
         };
     };
     getRoute: {
         parameters: {
             query?: {
-                /** @description P2: `page` wraps list bodies as {items,row_count,truncated}. Ignored by P1 brokers. */
-                format?: components["parameters"]["Format"];
+                /** @description Set to `page` to wrap a list as `{ items, offset, limit, truncated, total? }` instead of a bare array. Default is the historical array body. */
+                format?: components["parameters"]["FormatPage"];
             };
             header?: never;
             path: {
@@ -1432,19 +1724,19 @@ export interface operations {
         requestBody?: never;
         responses: {
             200: components["responses"]["RouteList"];
-            404: components["responses"]["Error"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            503: components["responses"]["Unavailable"];
         };
     };
-    listRetains: {
+    getRetains: {
         parameters: {
             query?: {
                 topic_filter?: string;
-                offset?: components["parameters"]["OffsetAlias"];
-                _offset?: components["parameters"]["Offset"];
-                limit?: components["parameters"]["LimitAlias"];
-                _limit?: components["parameters"]["Limit"];
-                /** @description P2: `page` wraps list bodies as {items,row_count,truncated}. Ignored by P1 brokers. */
-                format?: components["parameters"]["Format"];
+                offset?: number;
+                limit?: number;
+                /** @description Set to `page` to wrap a list as `{ items, offset, limit, truncated, total? }` instead of a bare array. Default is the historical array body. */
+                format?: components["parameters"]["FormatPage"];
             };
             header?: never;
             path?: never;
@@ -1452,8 +1744,20 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            200: components["responses"]["RetainList"];
-            401: components["responses"]["Error"];
+            /** @description Retained page */
+            200: {
+                headers: {
+                    "X-Row-Count": components["headers"]["XRowCount"];
+                    "X-Truncated": components["headers"]["XTruncated"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RetainPage"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            503: components["responses"]["Unavailable"];
         };
     };
     deleteRetain: {
@@ -1472,13 +1776,17 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "text/plain": string;
+                };
             };
-            400: components["responses"]["Error"];
-            404: components["responses"]["Error"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            503: components["responses"]["Unavailable"];
         };
     };
-    publish: {
+    mqttPublish: {
         parameters: {
             query?: never;
             header?: never;
@@ -1487,7 +1795,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["PublishRequest"];
+                "application/json": components["schemas"]["PublishParams"];
             };
         };
         responses: {
@@ -1497,13 +1805,15 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": string;
+                    "text/plain": string;
                 };
             };
-            400: components["responses"]["Error"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            503: components["responses"]["Unavailable"];
         };
     };
-    subscribe: {
+    mqttSubscribe: {
         parameters: {
             query?: never;
             header?: never;
@@ -1512,11 +1822,11 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["SubscribeRequest"];
+                "application/json": components["schemas"]["SubscribeParams"];
             };
         };
         responses: {
-            /** @description Subscribe result */
+            /** @description Per-topic results */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1527,10 +1837,12 @@ export interface operations {
                     };
                 };
             };
-            400: components["responses"]["Error"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            503: components["responses"]["Unavailable"];
         };
     };
-    unsubscribe: {
+    mqttUnsubscribe: {
         parameters: {
             query?: never;
             header?: never;
@@ -1539,7 +1851,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UnsubscribeRequest"];
+                "application/json": components["schemas"]["UnsubscribeParams"];
             };
         };
         responses: {
@@ -1548,18 +1860,28 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "text/plain": string;
+                };
             };
-            400: components["responses"]["Error"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            503: components["responses"]["Unavailable"];
         };
     };
-    listPlugins: {
+    allPlugins: {
         parameters: {
             query?: {
+                /** @description Max rows. `0` or omitted uses plugin `max_row_limit` (default 10000). */
                 _limit?: components["parameters"]["Limit"];
+                /** @description Alias of `_limit` (used by `/retains` as the canonical name). */
+                limit?: components["parameters"]["LimitAlias"];
+                /** @description Rows to skip after the backend fetch. */
                 _offset?: components["parameters"]["Offset"];
-                /** @description P2: `page` wraps list bodies as {items,row_count,truncated}. Ignored by P1 brokers. */
-                format?: components["parameters"]["Format"];
+                /** @description Alias of `_offset`. */
+                offset?: components["parameters"]["OffsetAlias"];
+                /** @description Set to `page` to wrap a list as `{ items, offset, limit, truncated, total? }` instead of a bare array. Default is the historical array body. */
+                format?: components["parameters"]["FormatPage"];
             };
             header?: never;
             path?: never;
@@ -1567,46 +1889,62 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            200: components["responses"]["PluginClusterList"];
-            401: components["responses"]["Error"];
+            /** @description Per-node plugin groups */
+            200: {
+                headers: {
+                    "X-Row-Count": components["headers"]["XRowCount"];
+                    "X-Truncated": components["headers"]["XTruncated"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PluginNodeGroup"][] | components["schemas"]["Page"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            503: components["responses"]["Unavailable"];
         };
     };
-    listNodePlugins: {
+    nodePlugins: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Max rows. `0` or omitted uses plugin `max_row_limit` (default 10000). */
+                _limit?: components["parameters"]["Limit"];
+                /** @description Alias of `_limit` (used by `/retains` as the canonical name). */
+                limit?: components["parameters"]["LimitAlias"];
+                /** @description Rows to skip after the backend fetch. */
+                _offset?: components["parameters"]["Offset"];
+                /** @description Alias of `_offset`. */
+                offset?: components["parameters"]["OffsetAlias"];
+                /** @description Set to `page` to wrap a list as `{ items, offset, limit, truncated, total? }` instead of a bare array. Default is the historical array body. */
+                format?: components["parameters"]["FormatPage"];
+            };
             header?: never;
             path: {
-                node: components["parameters"]["NodeIdPath"];
+                node: components["parameters"]["PluginNode"];
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Plugins */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PluginInfo"][];
-                };
-            };
-            404: components["responses"]["Error"];
+            200: components["responses"]["PluginList"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            503: components["responses"]["Unavailable"];
         };
     };
-    getPlugin: {
+    nodePluginInfo: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                node: components["parameters"]["NodeIdPath"];
+                node: components["parameters"]["PluginNode"];
                 plugin: components["parameters"]["PluginName"];
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Plugin */
+            /** @description Plugin info */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1615,22 +1953,24 @@ export interface operations {
                     "application/json": components["schemas"]["PluginInfo"];
                 };
             };
-            404: components["responses"]["Error"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            503: components["responses"]["Unavailable"];
         };
     };
-    getPluginConfig: {
+    nodePluginConfig: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                node: components["parameters"]["NodeIdPath"];
+                node: components["parameters"]["PluginNode"];
                 plugin: components["parameters"]["PluginName"];
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Config JSON */
+            /** @description Plugin config JSON or text */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1641,15 +1981,17 @@ export interface operations {
                     };
                 };
             };
-            404: components["responses"]["Error"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            503: components["responses"]["Unavailable"];
         };
     };
-    reloadPluginConfig: {
+    nodePluginConfigReload: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                node: components["parameters"]["NodeIdPath"];
+                node: components["parameters"]["PluginNode"];
                 plugin: components["parameters"]["PluginName"];
             };
             cookie?: never;
@@ -1662,19 +2004,21 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": boolean;
+                    "text/plain": string;
                 };
             };
-            400: components["responses"]["Error"];
-            404: components["responses"]["Error"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            503: components["responses"]["Unavailable"];
         };
     };
-    loadPlugin: {
+    nodePluginLoad: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                node: components["parameters"]["NodeIdPath"];
+                node: components["parameters"]["PluginNode"];
                 plugin: components["parameters"]["PluginName"];
             };
             cookie?: never;
@@ -1687,19 +2031,21 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": boolean;
+                    "text/plain": string;
                 };
             };
-            400: components["responses"]["Error"];
-            404: components["responses"]["Error"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            503: components["responses"]["Unavailable"];
         };
     };
-    unloadPlugin: {
+    nodePluginUnload: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                node: components["parameters"]["NodeIdPath"];
+                node: components["parameters"]["PluginNode"];
                 plugin: components["parameters"]["PluginName"];
             };
             cookie?: never;
@@ -1715,11 +2061,13 @@ export interface operations {
                     "application/json": boolean;
                 };
             };
-            400: components["responses"]["Error"];
-            404: components["responses"]["Error"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            503: components["responses"]["Unavailable"];
         };
     };
-    listStats: {
+    getStats: {
         parameters: {
             query?: never;
             header?: never;
@@ -1734,12 +2082,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["NodeStats"][];
+                    "application/json": components["schemas"]["StatsNode"][];
                 };
             };
+            401: components["responses"]["Unauthorized"];
+            503: components["responses"]["Unavailable"];
         };
     };
-    statsSum: {
+    getStatsSum: {
         parameters: {
             query?: never;
             header?: never;
@@ -1748,112 +2098,186 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Cluster stats sum */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["StatsSum"];
-                };
-            };
-        };
-    };
-    statsHistory: {
-        parameters: {
-            query?: {
-                minutes?: components["parameters"]["HistoryQuery"];
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description History */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HistoryCluster"];
-                };
-            };
-            404: components["responses"]["Error"];
-        };
-    };
-    statsHistorySum: {
-        parameters: {
-            query?: {
-                minutes?: components["parameters"]["HistoryQuery"];
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description History sum */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HistorySum"];
-                };
-            };
-            404: components["responses"]["Error"];
-        };
-    };
-    listMetrics: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Per-node metrics */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["NodeMetrics"][];
-                };
-            };
-        };
-    };
-    metricsSum: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Cluster metrics sum */
+            /** @description Sum object (`nodes` map + `stats`) */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        [key: string]: number;
+                        [key: string]: unknown;
                     };
                 };
             };
+            401: components["responses"]["Unauthorized"];
+            503: components["responses"]["Unavailable"];
         };
     };
-    metricsHistory: {
+    getStatsNode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["NodeId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Node stats */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatsNode"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            503: components["responses"]["Unavailable"];
+        };
+    };
+    getSysStats: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Per-node system stats */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatsNode"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            503: components["responses"]["Unavailable"];
+        };
+    };
+    getSysStatsSum: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Sum object */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            503: components["responses"]["Unavailable"];
+        };
+    };
+    getSysStatsNode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["NodeId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Node system stats */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatsNode"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            503: components["responses"]["Unavailable"];
+        };
+    };
+    getStatsHistory: {
         parameters: {
             query?: {
-                minutes?: components["parameters"]["HistoryQuery"];
+                /** @description Start timestamp (milliseconds, inclusive) */
+                from?: components["parameters"]["HistoryFrom"];
+                /** @description End timestamp (milliseconds, inclusive) */
+                to?: components["parameters"]["HistoryTo"];
+                limit?: components["parameters"]["HistoryLimit"];
             };
             header?: never;
             path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description History series */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HistoryData"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            503: components["responses"]["Unavailable"];
+        };
+    };
+    getStatsHistorySum: {
+        parameters: {
+            query?: {
+                /** @description Start timestamp (milliseconds, inclusive) */
+                from?: components["parameters"]["HistoryFrom"];
+                /** @description End timestamp (milliseconds, inclusive) */
+                to?: components["parameters"]["HistoryTo"];
+                limit?: components["parameters"]["HistoryLimit"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Aggregated history */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HistoryData"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            503: components["responses"]["Unavailable"];
+        };
+    };
+    getStatsHistoryNode: {
+        parameters: {
+            query?: {
+                /** @description Start timestamp (milliseconds, inclusive) */
+                from?: components["parameters"]["HistoryFrom"];
+                /** @description End timestamp (milliseconds, inclusive) */
+                to?: components["parameters"]["HistoryTo"];
+                limit?: components["parameters"]["HistoryLimit"];
+            };
+            header?: never;
+            path: {
+                id: components["parameters"]["NodeId"];
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -1864,16 +2288,160 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HistoryCluster"];
+                    "application/json": components["schemas"]["HistoryData"];
                 };
             };
-            404: components["responses"]["Error"];
+            401: components["responses"]["Unauthorized"];
+            503: components["responses"]["Unavailable"];
         };
     };
-    metricsHistorySum: {
+    getMetrics: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Per-node metrics; failed peers use `{ ok: false, node, error }` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MetricsNode"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            503: components["responses"]["Unavailable"];
+        };
+    };
+    getMetricsSum: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Sum object */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            503: components["responses"]["Unavailable"];
+        };
+    };
+    getMetricsNode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["NodeId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Node metrics */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MetricsNode"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            503: components["responses"]["Unavailable"];
+        };
+    };
+    getPrometheusMetrics: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Prometheus text */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            503: components["responses"]["Unavailable"];
+        };
+    };
+    getPrometheusMetricsSum: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Prometheus text */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            503: components["responses"]["Unavailable"];
+        };
+    };
+    getPrometheusMetricsNode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["NodeId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Prometheus text */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            503: components["responses"]["Unavailable"];
+        };
+    };
+    getMetricsHistory: {
         parameters: {
             query?: {
-                minutes?: components["parameters"]["HistoryQuery"];
+                /** @description Start timestamp (milliseconds, inclusive) */
+                from?: components["parameters"]["HistoryFrom"];
+                /** @description End timestamp (milliseconds, inclusive) */
+                to?: components["parameters"]["HistoryTo"];
+                limit?: components["parameters"]["HistoryLimit"];
             };
             header?: never;
             path?: never;
@@ -1881,16 +2449,75 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description History sum */
+            /** @description History series */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HistorySum"];
+                    "application/json": components["schemas"]["HistoryData"][];
                 };
             };
-            404: components["responses"]["Error"];
+            401: components["responses"]["Unauthorized"];
+            503: components["responses"]["Unavailable"];
+        };
+    };
+    getMetricsHistorySum: {
+        parameters: {
+            query?: {
+                /** @description Start timestamp (milliseconds, inclusive) */
+                from?: components["parameters"]["HistoryFrom"];
+                /** @description End timestamp (milliseconds, inclusive) */
+                to?: components["parameters"]["HistoryTo"];
+                limit?: components["parameters"]["HistoryLimit"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Aggregated history */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HistoryData"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            503: components["responses"]["Unavailable"];
+        };
+    };
+    getMetricsHistoryNode: {
+        parameters: {
+            query?: {
+                /** @description Start timestamp (milliseconds, inclusive) */
+                from?: components["parameters"]["HistoryFrom"];
+                /** @description End timestamp (milliseconds, inclusive) */
+                to?: components["parameters"]["HistoryTo"];
+                limit?: components["parameters"]["HistoryLimit"];
+            };
+            header?: never;
+            path: {
+                id: components["parameters"]["NodeId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description History */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HistoryData"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            503: components["responses"]["Unavailable"];
         };
     };
 }
