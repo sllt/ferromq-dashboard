@@ -4,6 +4,18 @@
     "tagline": "MQTT 运维控制台",
     "cluster": "集群"
   },
+  "a11y": {
+    "skipToMain": "跳到主内容",
+    "main": "主内容",
+    "toggleSidebar": "展开或折叠侧栏",
+    "language": "语言"
+  },
+  "crash": {
+    "title": "页面出错了",
+    "hint": "控制台遇到未处理的错误。请刷新页面重试；若持续出现，请查看浏览器控制台。",
+    "retry": "重试",
+    "reload": "刷新页面"
+  },
   "nav": {
     "overview": "总览",
     "nodes": "节点",

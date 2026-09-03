@@ -64,7 +64,7 @@ export function AppHeader({
   return (
     <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-md">
       <div className="flex items-center gap-2">
-        <Button size="icon" variant="ghost" onClick={onToggle} aria-label="Toggle sidebar">
+        <Button size="icon" variant="ghost" onClick={onToggle} aria-label={t('a11y.toggleSidebar')}>
           <PanelLeft className={collapsed ? 'rotate-180' : ''} />
         </Button>
         {user?.role === 'viewer' ? (
@@ -82,7 +82,7 @@ export function AppHeader({
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button size="icon" variant="ghost" aria-label="Language">
+            <Button size="icon" variant="ghost" aria-label={t('a11y.language')}>
               <Languages />
             </Button>
           </DropdownMenuTrigger>
