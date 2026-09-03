@@ -4,6 +4,18 @@
     "tagline": "MQTT operations console",
     "cluster": "Cluster"
   },
+  "a11y": {
+    "skipToMain": "Skip to main content",
+    "main": "Main content",
+    "toggleSidebar": "Toggle sidebar",
+    "language": "Language"
+  },
+  "crash": {
+    "title": "Something went wrong",
+    "hint": "The dashboard hit an unhandled error. Reload the page to try again. If it persists, check the browser console.",
+    "retry": "Try again",
+    "reload": "Reload page"
+  },
   "nav": {
     "overview": "Overview",
     "nodes": "Nodes",

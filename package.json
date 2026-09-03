@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "gen:api": "openapi-typescript openapi/openapi.json -o src/api/generated/schema.d.ts",
     "gen:api:live": "node scripts/refresh-openapi.mjs && pnpm gen:api",
-    "verify:parsers": "node --experimental-strip-types scripts/verify-parsers.mjs"
+    "verify:parsers": "node --experimental-strip-types scripts/verify-parsers.mjs",
+    "pack:dist": "bash scripts/pack-dashboard-dist.sh"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

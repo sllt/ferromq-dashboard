@@ -133,7 +133,7 @@ export function AppSidebar({ collapsed }: { collapsed: boolean }) {
       </div>
       <Separator />
       <ScrollArea className="flex-1 py-3">
-        <nav className="space-y-4 px-2">
+        <nav className="space-y-4 px-2" aria-label={t('app.name')}>
           {groups.map((group) => {
             const visible = group.items.filter((item) => {
               if (item.admin && !canAdmin) return false

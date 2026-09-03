@@ -46,7 +46,7 @@ cp .env.example .env
 pnpm dev
 ```
 
-浏览器打开提示的本地地址。应用使用 **Hash Router**（`#/overview` 等），`vite.config.ts` 中 `base: './'`，便于静态部署或嵌入。
+浏览器打开提示的本地地址。应用使用 **Hash Router**（`#/overview` 等），`vite.config.ts` 中 `base: './'`（相对资源路径），便于静态部署，或嵌入 FerroMQ 的 `/dashboard/`。
 
 开发时代理：
 
@@ -90,7 +90,44 @@ pnpm build
 pnpm preview
 ```
 
-产物在 `dist/`，可直接放到任意静态站点。若与 FerroMQ 不同源，请由网关把 `/api/v1` 反代到 HTTP API。
+产物在 `dist/`。`base: './'` 让 JS/CSS 使用相对路径，Hash Router 让页面路径留在 `/dashboard/#/...`，嵌入子目录时不需要 History 回退。
+
+## 嵌入 FerroMQ（同步 `dashboard-dist`）
+
+`pnpm build` 的静态产物需要拷进 [sllt/ferromq](https://github.com/sllt/ferromq) 的 HTTP API 插件目录（后端 P7 companion PR 从这里提供 `/dashboard/`）：
+
+```
+ferromq-plugins/ferromq-http-api/dashboard-dist/
+```
+
+推荐流程：
+
+```bash
+# 干净构建 dist/，并打印 dashboard 仓库的 commit SHA
+./scripts/pack-dashboard-dist.sh
+# 可选：再打一份 tar.gz
+./scripts/pack-dashboard-dist.sh --tarball
+
+# 拷到本地 ferromq 工作树（示例）
+rsync -a --delete dist/ /path/to/ferromq/ferromq-plugins/ferromq-http-api/dashboard-dist/
+```
+
+`dist/COMMIT` 会写入本次构建对应的 git SHA，方便对照 dashboard 与 broker 两边的版本。不要把 `node_modules` 或源码拷进 `dashboard-dist/`。
+
+若控制台与 Broker 不同源，请由网关把 `/api/v1` 反代到 HTTP API；嵌入同进程时插件会同时提供 `/dashboard/` 与 `/api/v1`。
+
+## CI
+
+GitHub Actions（`.github/workflows/ci.yml`）在 Node 20 上执行：
+
+```
+pnpm install --frozen-lockfile
+pnpm lint
+pnpm verify:parsers
+pnpm build
+```
+
+`pnpm build` 含 `tsc -b`，类型错误与 ESLint error 都会让 CI 失败。不依赖实时 Broker。
 
 ## 国际化与主题
 

@@ -88,7 +88,7 @@ export function LoginPage() {
         <div className="absolute bottom-0 right-0 size-[28rem] rounded-full bg-chart-2/10 blur-3xl" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,var(--border)_1px,transparent_0)] [background-size:22px_22px] opacity-40" />
       </div>
-      <div className="relative mx-auto flex min-h-svh max-w-md flex-col justify-center px-6">
+      <main id="main-content" tabIndex={-1} className="relative mx-auto flex min-h-svh max-w-md flex-col justify-center px-6 outline-none">
         <div className="mb-8 flex items-center gap-3">
           <div className="flex size-11 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/25">
             <Network className="size-5" />
@@ -222,7 +222,7 @@ export function LoginPage() {
             EN
           </button>
         </div>
-      </div>
+      </main>
     </div>
   )
 }

@@ -3,6 +3,7 @@ import { RouterProvider, createHashHistory, createRouter } from '@tanstack/react
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import '@/lib/i18n'
+import { AppErrorBoundary } from '@/components/app-error-boundary'
 import { applyTheme, getStoredTheme } from '@/lib/theme'
 import { routeTree } from '@/routeTree.gen'
 import '@/styles/index.css'
@@ -34,8 +35,10 @@ declare module '@tanstack/react-router' {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>
+    <AppErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>
+    </AppErrorBoundary>
   </StrictMode>,
 )

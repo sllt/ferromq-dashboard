@@ -9,6 +9,8 @@ export default defineConfig(({ mode }) => {
   const apiTarget = env.VITE_API_PROXY_TARGET || 'http://127.0.0.1:6060'
 
   return {
+    // Relative asset URLs so the static build embeds under /dashboard/ (or any subpath).
+    // Routing stays on the hash (`#/overview`); do not switch to browser history.
     base: './',
     plugins: [
       tanstackRouter({
