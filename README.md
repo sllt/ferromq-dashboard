@@ -127,7 +127,7 @@ pnpm verify:parsers
 pnpm build
 ```
 
-`pnpm build` 含 `tsc -b`，类型错误与 ESLint error 都会让 CI 失败。不依赖实时 Broker。
+`pnpm build` 含 `tsc -b`，类型错误与 ESLint error 都会让 CI 失败。`verify:parsers` 通过 `tsx` 加载 TypeScript 模块，以便在 Node 20 上运行（不依赖 Node 22 的 `--experimental-strip-types`）。不依赖实时 Broker。
 
 ## 国际化与主题
 
