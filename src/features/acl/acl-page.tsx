@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { ColumnDef } from '@tanstack/react-table'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { DataTable } from '@/components/data-table'
 import { PageHeader } from '@/components/page-header'
 import { ErrorState, TableSkeleton } from '@/components/query-state'
@@ -300,9 +301,14 @@ function AclRuleDialog({
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
+    const whoValue = whoAll ? 'all' : sanitizeAclWho(who)
+    if (!whoAll && whoValue === 'all') {
+      toast.error(t('acl.whoIncomplete'))
+      return
+    }
     const body: AclRuleInput = {
       access,
-      who: whoAll ? 'all' : sanitizeAclWho(who),
+      who: whoValue,
       control,
     }
     const parsedTopics = parseTopicsText(topics)

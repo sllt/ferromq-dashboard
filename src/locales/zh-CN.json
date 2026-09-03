@@ -453,6 +453,7 @@
     "deny": "拒绝",
     "who": "对象",
     "whoAll": "全部客户端",
+    "whoIncomplete": "请填写用户名、客户端 ID、IP 或协议；若只有脱敏密码，请让管理员先显示明文。",
     "control": "控制点",
     "control_all": "全部",
     "control_connect": "连接",

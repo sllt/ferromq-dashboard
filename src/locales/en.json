@@ -453,6 +453,7 @@
     "deny": "Deny",
     "who": "Who",
     "whoAll": "All clients",
+    "whoIncomplete": "Set user, client id, IP, or protocol — or ask an admin to reveal the password.",
     "control": "Control",
     "control_all": "All",
     "control_connect": "Connect",
