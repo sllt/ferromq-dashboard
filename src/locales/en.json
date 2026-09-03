@@ -618,7 +618,9 @@
     "title": "This capability is not implemented",
     "hint": "The broker reported an honest gap. No metrics are invented on this page.",
     "related": "Related working pages",
-    "backendGap": "Broker explanation"
+    "backendGap": "Broker explanation",
+    "availableTitle": "Broker reported this capability as available",
+    "availableHint": "Showing the API payload as returned. No metrics are invented on this page."
   },
   "alarms": {
     "title": "Alarms",

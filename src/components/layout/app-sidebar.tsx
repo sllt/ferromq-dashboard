@@ -152,7 +152,7 @@ export function AppSidebar({ collapsed }: { collapsed: boolean }) {
                   {visible.map((item) => {
                     const active = item.to === '/' ? pathname === '/' : pathname.startsWith(item.to)
                     const Icon = item.icon
-                    const gated = item.feature && !features.isLoading && !features.isError && !features.has(item.feature)
+                    const gated = Boolean(item.feature && !features.has(item.feature))
                     if (gated) {
                       const label = (
                         <span

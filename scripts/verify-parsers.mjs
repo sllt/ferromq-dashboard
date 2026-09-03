@@ -23,6 +23,7 @@ import {
   parseNodeCluster,
   parseTopicMetrics,
 } from '../src/lib/diagnostics.ts'
+import { FEATURE_KEYS, summarizeFlags } from '../src/lib/feature-flags.ts'
 
 let failed = 0
 function assert(name, cond) {
@@ -218,6 +219,39 @@ const nodeCluster = parseNodeCluster({ mode: 'raft', plugin: 'ferromq-cluster-ra
 assert('node cluster extra field', nodeCluster?.mode === 'raft' && nodeCluster.role === 'follower' && nodeCluster.leader_id === 1)
 assert('node without cluster stays undefined', parseNodeCluster({ connections: 3 }) === undefined)
 assert('reject topology without local id', parseClusterTopology({ available: true, mode: 'raft' }) === null)
+
+const missingFlags = summarizeFlags(undefined)
+assert(
+  'features missing fail-closed',
+  FEATURE_KEYS.every((k) => missingFlags[k] === false),
+)
+assert(
+  'features null fail-closed',
+  FEATURE_KEYS.every((k) => summarizeFlags(null)[k] === false),
+)
+const retainOnly = summarizeFlags({ enabled: { retain: true } })
+assert(
+  'features enabled retain only',
+  retainOnly.retain === true && retainOnly.session_storage === false && retainOnly.delayed === false,
+)
+const fromNodes = summarizeFlags({
+  consistent: true,
+  node_count: 1,
+  conflicts: [],
+  nodes: [{ node_id: 1, features: { retain: true, delayed: false } }],
+})
+assert(
+  'features from nodes fail-closed',
+  fromNodes.retain === true && fromNodes.delayed === false && fromNodes.message_storage === false,
+)
+assert(
+  'capability gap available true kept',
+  parseCapabilityGap({ available: true, items: [{ id: 1 }], kind: 'ok' })?.available === true,
+)
+assert(
+  'capability gap available false kept',
+  parseCapabilityGap({ available: false, gap: 'no plugin', items: [] })?.available === false,
+)
 
 if (failed) {
   console.error(`${failed} failed`)

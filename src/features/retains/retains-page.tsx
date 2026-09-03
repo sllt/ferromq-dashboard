@@ -24,6 +24,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toastApiError } from '@/lib/api'
+import { useCanWrite } from '@/lib/auth-store'
 import { endpoints } from '@/lib/endpoints'
 import { DEFAULT_PAGE_SIZE } from '@/lib/list'
 import type { RetainItem } from '@/lib/types'
@@ -33,6 +34,7 @@ export function RetainsPage() {
   const { t } = useTranslation()
   const qc = useQueryClient()
   const retain = useRequiredFeature('retain')
+  const canWrite = useCanWrite()
   const [topicFilter, setTopicFilter] = useState('#')
   const [limit, setLimit] = useState(DEFAULT_PAGE_SIZE)
   const [applied, setApplied] = useState({ topic_filter: '#', offset: 0, limit: DEFAULT_PAGE_SIZE })
@@ -96,14 +98,16 @@ export function RetainsPage() {
             <Button size="sm" variant="outline" onClick={() => setPreview(row.original)}>
               {t('retains.preview')}
             </Button>
-            <Button size="sm" variant="destructive" onClick={() => setDelTopic(row.original.topic)}>
-              {t('common.delete')}
-            </Button>
+            {canWrite ? (
+              <Button size="sm" variant="destructive" onClick={() => setDelTopic(row.original.topic)}>
+                {t('common.delete')}
+              </Button>
+            ) : null}
           </div>
         ),
       },
     ],
-    [t],
+    [t, canWrite],
   )
 
   if (!retain.isLoading && !retain.allowed) {
@@ -193,7 +197,7 @@ export function RetainsPage() {
             <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
-                if (delTopic) delMut.mutate(delTopic)
+                if (canWrite && delTopic) delMut.mutate(delTopic)
                 setDelTopic(null)
               }}
             >

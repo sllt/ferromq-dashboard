@@ -46,13 +46,15 @@ export function ClientDetailPage() {
     onError: toastApiError,
   })
 
-  const columns = useMemo<ColumnDef<SubscriptionInfo>[]>(
-    () => [
+  const columns = useMemo<ColumnDef<SubscriptionInfo>[]>(() => {
+    const cols: ColumnDef<SubscriptionInfo>[] = [
       { accessorKey: 'topic', header: t('common.topic') },
       { accessorKey: 'qos', header: t('common.qos') },
       { accessorKey: 'share', header: t('subs.share') },
       { accessorKey: 'node_id', header: t('common.node') },
-      {
+    ]
+    if (canWrite) {
+      cols.push({
         id: 'actions',
         header: t('common.actions'),
         cell: ({ row }) => (
@@ -60,10 +62,10 @@ export function ClientDetailPage() {
             {t('clients.unsubscribe')}
           </Button>
         ),
-      },
-    ],
-    [t, unsubMut],
-  )
+      })
+    }
+    return cols
+  }, [t, unsubMut, canWrite])
 
   if (clientQ.isLoading) return <PageSkeleton cards={2} />
   if (clientQ.error) return <ErrorState error={clientQ.error} onRetry={() => void clientQ.refetch()} />

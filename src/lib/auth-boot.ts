@@ -16,17 +16,26 @@ export async function ensureSession(): Promise<void> {
   }
 }
 
+async function applyMe(): Promise<void> {
+  const user = parseSessionUser(await endpoints.me())
+  if (user) useAuthStore.getState().applySession(user)
+  else useAuthStore.getState().clearLocal()
+}
+
 async function hydrate() {
   try {
-    const user = parseSessionUser(await endpoints.me())
-    if (user) useAuthStore.getState().applySession(user)
-    else useAuthStore.getState().clearLocal()
+    await applyMe()
   } catch (err) {
     if (err instanceof ApiError && err.status === 401) {
       useAuthStore.getState().clearLocal()
       return
     }
-    useAuthStore.getState().markHydrated()
+    try {
+      await applyMe()
+    } catch {
+      // Non-401 (5xx / network): never keep a stale sessionStorage role.
+      useAuthStore.getState().clearLocal()
+    }
   }
 }
 

@@ -76,6 +76,7 @@ P3a 会话登录 + P3b 管理页（对齐 [ferromq#3](https://github.com/sllt/fe
 - 主路径：`POST /api/v1/auth/login` `{ username, password }`，Broker 设置 HttpOnly Cookie `ferromq_session`。
 - 浏览器**不存储密码**。会话只在 Cookie 中；页面只缓存 `{ username, role, auth }`。
 - 所有 `/api/v1` 请求使用 `withCredentials: true` / `credentials: 'include'`。
+- CSRF 依赖同域嵌入 + Broker Cookie `SameSite=Lax`；Dashboard 不单独下发 CSRF token。
 - 高级选项可填 `http_bearer_token`，作为 operator/admin 自动化回退（`Authorization: Bearer`）。
 - `POST /auth/logout` 清除 Cookie；用户菜单可改密（仅 session 登录，`POST /auth/change-password`）。
 - `POST /auth/init` 可从 `dashboard_admin_*` 配置一次性引导管理员。

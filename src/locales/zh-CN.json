@@ -618,7 +618,9 @@
     "title": "该能力未实现",
     "hint": "Broker 返回了明确的能力缺口。本页不会编造指标。",
     "related": "相关可用页面",
-    "backendGap": "Broker 说明"
+    "backendGap": "Broker 说明",
+    "availableTitle": "Broker 报告该能力可用",
+    "availableHint": "按接口返回原样展示。本页不会编造指标。"
   },
   "alarms": {
     "title": "告警",
