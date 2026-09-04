@@ -1,16 +1,14 @@
 import type { UserRole } from '@/lib/session-user'
 
-export type { AuthKind, SessionUser, UserRole } from '@/lib/session-user'
+export type {
+  AuthKind,
+  ChangePasswordResult,
+  InitAdminResult,
+  SessionUser,
+  UserRole,
+} from '@/lib/session-user'
 
-export type LoginRequest = {
-  username: string
-  password: string
-}
-
-export type ChangePasswordRequest = {
-  old_password: string
-  new_password: string
-}
+export type { ChangePasswordRequest, LoginRequest } from '@/api/schema'
 
 export type DashboardUser = {
   username: string

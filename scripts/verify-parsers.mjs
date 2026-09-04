@@ -6,13 +6,20 @@ import {
   collectSecretFields,
   countRedactedSecrets,
   isAclPlugin,
+  isHttpApiPlugin,
   isSecretKey,
   parseConfigValidateResult,
   parseJsonObject,
   stripRedactedSecrets,
 } from '../src/lib/config.ts'
 import { parseListResponse } from '../src/lib/list-parse.ts'
-import { canAdmin, canWrite, parseSessionUser } from '../src/lib/session-user.ts'
+import {
+  canAdmin,
+  canWrite,
+  parseChangePasswordResult,
+  parseInitAdminResult,
+  parseSessionUser,
+} from '../src/lib/session-user.ts'
 import {
   alternativeLink,
   parseAlarm,
@@ -76,6 +83,17 @@ const ops = parseSessionUser({ username: 'ops', role: 'operator', auth: 'session
 assert('operator can write but not admin', ops?.role === 'operator' && canWrite(ops) === true && canAdmin(ops) === false)
 assert('admin can admin', canAdmin({ username: 'admin', role: 'admin', auth: 'session' }) === true)
 assert('api_key auth', parseSessionUser({ username: 'ci', role: 'operator', auth: 'api_key', key_id: 'k1' })?.auth === 'api_key')
+assert(
+  'change-password ok+rotated',
+  parseChangePasswordResult({ ok: true, session_rotated: true })?.session_rotated === true,
+)
+assert('change-password reject session user shape', parseChangePasswordResult({ username: 'a', role: 'admin', auth: 'session' }) === null)
+assert(
+  'init admin without auth',
+  parseInitAdminResult({ username: 'admin', role: 'admin', created: true })?.username === 'admin',
+)
+assert('init reject session-shaped body', parseInitAdminResult({ username: 'admin', role: 'admin', auth: 'session' }) === null)
+assert('session user still requires auth', parseSessionUser({ username: 'admin', role: 'admin', created: true }) === null)
 
 assert('secret http_bearer_token', isSecretKey('http_bearer_token'))
 assert('secret jwt_key', isSecretKey('jwt_key'))
@@ -98,6 +116,7 @@ assert(
 assert('secret fields include path', collectSecretFields(redacted).some((f) => f.path === 'http_bearer_token' && f.redacted))
 assert('parse json object', parseJsonObject('{"a":1}').ok === true && parseJsonObject('[1]').ok === false)
 assert('acl plugin name', isAclPlugin('ferromq-acl') && !isAclPlugin('ferromq-http-api'))
+assert('http-api plugin name', isHttpApiPlugin('ferromq-http-api') && !isHttpApiPlugin('ferromq-acl'))
 const vr = parseConfigValidateResult({
   ok: true,
   valid: true,

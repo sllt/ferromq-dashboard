@@ -54,6 +54,8 @@ pnpm dev
 /api/v1  →  ${VITE_API_PROXY_TARGET:-http://127.0.0.1:6060}
 ```
 
+Vite 代理 **不** 改写 `Host`（`changeOrigin: false`）。Broker CSRF 会把 `Origin`/`Referer` 的 host 与请求 `Host` 比较；若改成目标 `127.0.0.1:6060`，localhost 上的 cookie 写入会被拒绝。
+
 请先启动 FerroMQ，并确保 `ferromq-http-api` 插件在 `6060`（或你配置的端口）监听。
 
 ## OpenAPI 与类型生成
@@ -114,6 +116,8 @@ rsync -a --delete dist/ /path/to/ferromq/ferromq-plugins/ferromq-http-api/dashbo
 ```
 
 `dist/COMMIT` 会写入本次构建对应的 git SHA，方便对照 dashboard 与 broker 两边的版本。不要把 `node_modules` 或源码拷进 `dashboard-dist/`。
+
+公开的 [sllt/ferromq](https://github.com/sllt/ferromq) 同步脚本需要能 clone 本仓库。合并到 public broker 之前，请把 `sllt/ferromq-dashboard` 设为 **public**（或在 broker 仓库中 vendor `dashboard-dist`）。
 
 若控制台与 Broker 不同源，请由网关把 `/api/v1` 反代到 HTTP API；嵌入同进程时插件会同时提供 `/dashboard/` 与 `/api/v1`。
 

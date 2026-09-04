@@ -2,13 +2,13 @@ import { ApiError, apiDelete, apiGet, apiGetOptional, apiPost, apiPut } from '@/
 import { partitionCluster } from '@/lib/cluster'
 import { parseCapabilityGap, parseClusterWriteResult } from '@/lib/diagnostics'
 import { apiGetList, type ListQuery } from '@/lib/list'
+import type { components } from '@/api/generated/schema'
 import type {
   ApiEndpoint,
   ApiKeyCreated,
   ApiKeyInfo,
   AuditEvent,
   BrokerInfo,
-  ChangePasswordRequest,
   ClientInfo,
   ClientQuery,
   CreateApiKeyRequest,
@@ -20,7 +20,6 @@ import type {
   HistoryCluster,
   HistoryQuery,
   HistorySum,
-  LoginRequest,
   NodeHealth,
   NodeInfo,
   NodeMetrics,
@@ -29,7 +28,6 @@ import type {
   PluginInfo,
   PublishRequest,
   RouteInfo,
-  SessionUser,
   StatsSum,
   SubscriptionInfo,
   RetainItem,
@@ -62,12 +60,15 @@ import type {
   WebhooksOverview,
 } from '@/lib/types'
 
+type Schema = components['schemas']
+
 export const endpoints = {
-  login: (body: LoginRequest) => apiPost<SessionUser>('/auth/login', body),
-  logout: () => apiPost<SessionUser>('/auth/logout'),
-  me: () => apiGet<SessionUser>('/auth/me'),
-  changePassword: (body: ChangePasswordRequest) => apiPost<SessionUser>('/auth/change-password', body),
-  init: () => apiPost<SessionUser>('/auth/init'),
+  login: (body: Schema['LoginRequest']) => apiPost<Schema['SessionUser']>('/auth/login', body),
+  logout: () => apiPost<{ ok?: boolean }>('/auth/logout'),
+  me: () => apiGet<Schema['SessionUser']>('/auth/me'),
+  changePassword: (body: Schema['ChangePasswordRequest']) =>
+    apiPost<Schema['ChangePasswordResult']>('/auth/change-password', body),
+  init: () => apiPost<Schema['InitAdminResult']>('/auth/init'),
 
   users: (query?: ListQuery) => apiGetList<DashboardUser>('/users', query),
   createUser: (body: CreateUserRequest) => apiPost<DashboardUser>('/users', body),

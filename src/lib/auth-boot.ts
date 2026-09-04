@@ -1,7 +1,14 @@
 import { ApiError } from '@/lib/api'
 import { useAuthStore } from '@/lib/auth-store'
 import { endpoints } from '@/lib/endpoints'
-import { parseSessionUser, type SessionUser } from '@/lib/session-user'
+import {
+  parseChangePasswordResult,
+  parseInitAdminResult,
+  parseSessionUser,
+  type ChangePasswordResult,
+  type InitAdminResult,
+  type SessionUser,
+} from '@/lib/session-user'
 
 let inflight: Promise<void> | null = null
 
@@ -72,14 +79,22 @@ export async function logoutSession(): Promise<void> {
   useAuthStore.getState().clearLocal()
 }
 
-export async function changePassword(oldPassword: string, newPassword: string): Promise<SessionUser> {
-  const user = requireUser(
+export async function changePassword(oldPassword: string, newPassword: string): Promise<ChangePasswordResult> {
+  const result = parseChangePasswordResult(
     await endpoints.changePassword({ old_password: oldPassword, new_password: newPassword }),
   )
-  useAuthStore.getState().applySession(user)
-  return user
+  if (!result) throw new Error('Invalid change-password payload')
+  // Cookie is rotated; refresh identity. Never treat `{ok,session_rotated}` as SessionUser.
+  try {
+    await applyMe()
+  } catch {
+    useAuthStore.getState().clearLocal()
+  }
+  return result
 }
 
-export async function initAdminFromConfig(): Promise<SessionUser> {
-  return requireUser(await endpoints.init())
+export async function initAdminFromConfig(): Promise<InitAdminResult> {
+  const result = parseInitAdminResult(await endpoints.init())
+  if (!result) throw new Error('Invalid init payload')
+  return result
 }

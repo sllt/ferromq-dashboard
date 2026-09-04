@@ -7,8 +7,19 @@ export type SessionUser = {
   auth: AuthKind
   expires_in?: number
   key_id?: string
-  created?: boolean
-  ok?: boolean
+}
+
+/** POST /auth/change-password — `{ ok, session_rotated }`, not a SessionUser. */
+export type ChangePasswordResult = {
+  ok: boolean
+  session_rotated?: boolean
+}
+
+/** POST /auth/init — `{ username, role, created }`. Does not create a session. */
+export type InitAdminResult = {
+  username: string
+  role: UserRole
+  created: boolean
 }
 
 const ROLES = new Set<UserRole>(['admin', 'operator', 'viewer'])
@@ -26,8 +37,29 @@ export function parseSessionUser(data: unknown): SessionUser | null {
     auth: rec.auth as AuthKind,
     expires_in: typeof rec.expires_in === 'number' ? rec.expires_in : undefined,
     key_id: typeof rec.key_id === 'string' ? rec.key_id : undefined,
-    created: typeof rec.created === 'boolean' ? rec.created : undefined,
-    ok: typeof rec.ok === 'boolean' ? rec.ok : undefined,
+  }
+}
+
+export function parseChangePasswordResult(data: unknown): ChangePasswordResult | null {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return null
+  const rec = data as Record<string, unknown>
+  if (rec.ok !== true) return null
+  return {
+    ok: true,
+    session_rotated: typeof rec.session_rotated === 'boolean' ? rec.session_rotated : undefined,
+  }
+}
+
+export function parseInitAdminResult(data: unknown): InitAdminResult | null {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return null
+  const rec = data as Record<string, unknown>
+  if (typeof rec.username !== 'string' || !rec.username) return null
+  if (typeof rec.role !== 'string' || !ROLES.has(rec.role as UserRole)) return null
+  if (rec.created !== true) return null
+  return {
+    username: rec.username,
+    role: rec.role as UserRole,
+    created: true,
   }
 }
 

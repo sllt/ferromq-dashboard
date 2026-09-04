@@ -10,9 +10,9 @@ import { ErrorState, TableSkeleton } from '@/components/query-state'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { toastApiError } from '@/lib/api'
-import { useCanWrite } from '@/lib/auth-store'
+import { useCanAdmin, useCanWrite } from '@/lib/auth-store'
 import { partitionCluster } from '@/lib/cluster'
-import { isAclPlugin } from '@/lib/config'
+import { isAclPlugin, isHttpApiPlugin } from '@/lib/config'
 import { endpoints } from '@/lib/endpoints'
 import type { NodePlugins, PluginInfo } from '@/lib/types'
 
@@ -21,6 +21,7 @@ type Row = PluginInfo & { node: number }
 export function PluginsPage() {
   const { t } = useTranslation()
   const canWrite = useCanWrite()
+  const canAdmin = useCanAdmin()
   const qc = useQueryClient()
 
   const listQ = useQuery({ queryKey: ['plugins'], queryFn: endpoints.plugins })
@@ -94,6 +95,7 @@ export function PluginsPage() {
         cell: ({ row }) => {
           const p = row.original
           const locked = p.immutable
+          const canReload = isHttpApiPlugin(p.name) ? canAdmin : canWrite
           return (
             <div className="flex flex-wrap gap-1.5">
               {canWrite ? (
@@ -114,14 +116,16 @@ export function PluginsPage() {
                   >
                     {t('plugins.unload')}
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={locked}
-                    onClick={() => reloadMut.mutate({ node: p.node, name: p.name })}
-                  >
-                    {t('plugins.reload')}
-                  </Button>
+                  {canReload ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={locked}
+                      onClick={() => reloadMut.mutate({ node: p.node, name: p.name })}
+                    >
+                      {t('plugins.reload')}
+                    </Button>
+                  ) : null}
                 </>
               ) : null}
               <Button asChild size="sm" variant="secondary">
@@ -134,7 +138,7 @@ export function PluginsPage() {
         },
       },
     ],
-    [t, canWrite, loadMut, unloadMut, reloadMut],
+    [t, canWrite, canAdmin, loadMut, unloadMut, reloadMut],
   )
 
   return (

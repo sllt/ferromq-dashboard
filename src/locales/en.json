@@ -326,6 +326,7 @@
     "unloaded": "Plugin unloaded",
     "reloaded": "Config reloaded",
     "immutableHint": "Immutable plugins cannot be stopped. Config writes still land on disk and need a process restart.",
+    "httpApiAdminOnly": "Reloading ferromq-http-api is admin-only.",
     "version": "Version",
     "authors": "Authors"
   },
@@ -336,6 +337,7 @@
     "badPlugin": "Invalid plugin path",
     "reveal": "Reveal secrets",
     "revealAdminOnly": "Secrets stay redacted. Only admins can reveal.",
+    "httpApiAdminOnly": "ferromq-http-api config writes are admin-only (they can change http_bearer_token).",
     "redacted": "***",
     "noSecrets": "No secret keys in this document",
     "format": "Format JSON",

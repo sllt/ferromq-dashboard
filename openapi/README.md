@@ -28,7 +28,7 @@ This vendored copy keeps Bearer + `ferromq_session` cookie as one `securitySchem
 
 ## Contract the dashboard relies on
 
-- Auth: `POST /auth/login` `{username,password}` → HttpOnly `ferromq_session` + `SessionUser`; `GET /auth/me`; `POST /auth/logout`; `POST /auth/change-password`; `POST /auth/init`
+- Auth: `POST /auth/login` `{username,password}` → HttpOnly `ferromq_session` + `SessionUser`; `GET /auth/me`; `POST /auth/logout`; `POST /auth/change-password` → `{ok, session_rotated}` (not SessionUser); `POST /auth/init` → `{username, role, created}` (no session)
 - Roles: `admin` (users / keys / audit / broker config write / `?reveal=1` + writes) | `operator` (kick / publish / plugin config write+reload) | `viewer` (read-only, secrets redacted)
 - Admin: `GET/POST /users`, `POST /users/{username}/disable|enable`, `GET/POST /api-keys`, `DELETE /api-keys/{id}`, `GET /audit`, `PUT /broker/config/{section}`, `?reveal=1`, `allow_private=1`
 - Config: `GET/PUT /plugins/{node}/{plugin}/config`, `POST .../validate`, `GET .../versions`, `POST .../rollback/{version}`; `GET /broker/config`, `GET/PUT /broker/config/{mqtt|listener|log}`

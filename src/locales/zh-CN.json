@@ -326,6 +326,7 @@
     "unloaded": "插件已卸载",
     "reloaded": "配置已重载",
     "immutableHint": "不可变插件无法停止。配置仍会写入磁盘，需重启进程后生效。",
+    "httpApiAdminOnly": "重载 ferromq-http-api 仅管理员可用。",
     "version": "版本",
     "authors": "作者"
   },
@@ -336,6 +337,7 @@
     "badPlugin": "无效的插件路径",
     "reveal": "显示密钥",
     "revealAdminOnly": "密钥保持脱敏。只有管理员可以查看明文。",
+    "httpApiAdminOnly": "ferromq-http-api 配置写入仅管理员可用（会改到 http_bearer_token）。",
     "redacted": "***",
     "noSecrets": "当前文档没有密钥字段",
     "format": "格式化 JSON",

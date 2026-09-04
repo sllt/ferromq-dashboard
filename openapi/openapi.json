@@ -313,11 +313,11 @@
         },
         "responses": {
           "200": {
-            "description": "Updated",
+            "description": "Updated; session cookie is rotated",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SessionUser"
+                  "$ref": "#/components/schemas/ChangePasswordResult"
                 }
               }
             }
@@ -342,11 +342,11 @@
         "security": [],
         "responses": {
           "200": {
-            "description": "Created",
+            "description": "Created the configured admin user. Does not start a session.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SessionUser"
+                  "$ref": "#/components/schemas/InitAdminResult"
                 }
               }
             }
@@ -6110,6 +6110,45 @@
             "type": "string",
             "format": "password",
             "minLength": 8
+          }
+        }
+      },
+      "ChangePasswordResult": {
+        "type": "object",
+        "required": [
+          "ok"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "session_rotated": {
+            "type": "boolean",
+            "description": "True when the broker revoked old sessions and set a new ferromq_session cookie"
+          }
+        }
+      },
+      "InitAdminResult": {
+        "type": "object",
+        "required": [
+          "username",
+          "role",
+          "created"
+        ],
+        "properties": {
+          "username": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "operator",
+              "viewer"
+            ]
+          },
+          "created": {
+            "type": "boolean"
           }
         }
       },

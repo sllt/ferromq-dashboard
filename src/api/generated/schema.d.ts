@@ -2260,6 +2260,17 @@ export interface components {
             /** Format: password */
             new_password: string;
         };
+        ChangePasswordResult: {
+            ok: boolean;
+            /** @description True when the broker revoked old sessions and set a new ferromq_session cookie */
+            session_rotated?: boolean;
+        };
+        InitAdminResult: {
+            username: string;
+            /** @enum {string} */
+            role: "admin" | "operator" | "viewer";
+            created: boolean;
+        };
         SessionUser: {
             username: string;
             /** @enum {string} */
@@ -2642,13 +2653,13 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Updated */
+            /** @description Updated; session cookie is rotated */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SessionUser"];
+                    "application/json": components["schemas"]["ChangePasswordResult"];
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -2664,13 +2675,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Created */
+            /** @description Created the configured admin user. Does not start a session. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SessionUser"];
+                    "application/json": components["schemas"]["InitAdminResult"];
                 };
             };
             400: components["responses"]["BadRequest"];

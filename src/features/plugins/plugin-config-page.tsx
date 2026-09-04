@@ -20,6 +20,7 @@ import { useCanAdmin, useCanWrite } from '@/lib/auth-store'
 import {
   countRedactedSecrets,
   isAclPlugin,
+  isHttpApiPlugin,
   parseJsonObject,
   prettyJson,
   stripRedactedSecrets,
@@ -35,6 +36,8 @@ export function PluginConfigPage() {
   const qc = useQueryClient()
   const canWrite = useCanWrite()
   const canAdmin = useCanAdmin()
+  const httpApi = isHttpApiPlugin(plugin)
+  const canEdit = httpApi ? canAdmin : canWrite
   const [reveal, setReveal] = useState(false)
   const [text, setText] = useState('')
   const [apply, setApply] = useState<ConfigApplyMode>('reload')
@@ -194,9 +197,9 @@ export function PluginConfigPage() {
             )}
           </div>
 
-          <ConfigJsonEditor value={text} onChange={setText} readOnly={!canWrite} />
+          <ConfigJsonEditor value={text} onChange={setText} readOnly={!canEdit} />
 
-          {canWrite ? (
+          {canEdit ? (
             <div className="flex flex-wrap items-end gap-3 border-t pt-3">
               <div className="space-y-1.5">
                 <Label className="text-xs">{t('config.applyMode')}</Label>
@@ -227,7 +230,9 @@ export function PluginConfigPage() {
               </Button>
             </div>
           ) : (
-            <p className="text-xs text-muted-foreground">{t('config.viewerReadonly')}</p>
+            <p className="text-xs text-muted-foreground">
+              {httpApi ? t('config.httpApiAdminOnly') : t('config.viewerReadonly')}
+            </p>
           )}
           {preview ? (
             <div className="space-y-2 border-t pt-3">
@@ -242,7 +247,7 @@ export function PluginConfigPage() {
 
         <ConfigVersions
           versions={Array.isArray(versionsQ.data) ? versionsQ.data : []}
-          canRollback={canWrite}
+          canRollback={canEdit}
           busy={rollbackMut.isPending}
           onRollback={(version) => {
             if (window.confirm(t('config.rollbackConfirm', { version }))) {

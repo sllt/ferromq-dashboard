@@ -126,3 +126,8 @@ export function asRecord(value: unknown): Record<string, unknown> {
 export function isAclPlugin(name: string): boolean {
   return /acl/i.test(name)
 }
+
+/** Writing this plugin can change `http_bearer_token` — admin-only on the broker. */
+export function isHttpApiPlugin(name: string): boolean {
+  return name === 'ferromq-http-api'
+}

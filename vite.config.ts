@@ -31,7 +31,10 @@ export default defineConfig(({ mode }) => {
       proxy: {
         '/api/v1': {
           target: apiTarget,
-          changeOrigin: true,
+          // Keep the browser Host. FerroMQ CSRF compares Origin/Referer host
+          // to Host; changeOrigin would rewrite Host to the proxy target
+          // (127.0.0.1:6060) and reject cookie session writes.
+          changeOrigin: false,
         },
       },
     },
@@ -41,7 +44,7 @@ export default defineConfig(({ mode }) => {
       proxy: {
         '/api/v1': {
           target: apiTarget,
-          changeOrigin: true,
+          changeOrigin: false,
         },
       },
     },
