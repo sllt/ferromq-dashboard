@@ -84,7 +84,8 @@ P3a 会话登录 + P3b 管理页（对齐 [ferromq#3](https://github.com/sllt/fe
 - `POST /auth/init` 可从 `dashboard_admin_*` 配置一次性引导管理员。
 - 角色：`admin`（用户 / 密钥 / 审计 / Broker 配置写入 / `?reveal=1` / `allow_private=1`）；`operator`（踢出 / 发布 / 插件与 P5 集成写入 / 确认告警 / Raft leave）；`viewer` 只读，密钥脱敏。
 - 侧栏「用户 / API 密钥 / 审计」仅 `admin` 可见。ACL / 认证 / Webhook / 桥接所有人可看，写入需 operator+。
-- 未配置 Bearer、API key 与 `dashboard_admin_password` 时，`/auth/me` 仍可能返回匿名 admin（开放访问）。
+- 未配置 Bearer、API key 与 `dashboard_admin_password` 时，`/auth/me` 返回匿名 viewer，只读接口保持开放；匿名 admin 只能由后端不安全兼容开关显式启用。
+- 用户密码哈希和 API Key 哈希由 Broker 按节点持久化；Session 仍在进程内存中，集群浏览器访问需要粘性会话。
 
 ## 构建
 
@@ -117,7 +118,7 @@ rsync -a --delete dist/ /path/to/ferromq/ferromq-plugins/ferromq-http-api/dashbo
 
 `dist/COMMIT` 会写入本次构建对应的 git SHA，方便对照 dashboard 与 broker 两边的版本。不要把 `node_modules` 或源码拷进 `dashboard-dist/`。
 
-公开的 [sllt/ferromq](https://github.com/sllt/ferromq) 同步脚本需要能 clone 本仓库。合并到 public broker 之前，请把 `sllt/ferromq-dashboard` 设为 **public**（或在 broker 仓库中 vendor `dashboard-dist`）。
+本仓库与 [sllt/ferromq](https://github.com/sllt/ferromq) 均为 public；Broker 同步脚本默认按已嵌入的 commit 重建，刷新移动中的开发分支时需显式指定 `FERROMQ_DASHBOARD_REF=dev`。
 
 若控制台与 Broker 不同源，请由网关把 `/api/v1` 反代到 HTTP API；嵌入同进程时插件会同时提供 `/dashboard/` 与 `/api/v1`。
 

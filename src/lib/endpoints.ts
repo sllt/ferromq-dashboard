@@ -64,7 +64,7 @@ type Schema = components['schemas']
 
 export const endpoints = {
   login: (body: Schema['LoginRequest']) => apiPost<Schema['SessionUser']>('/auth/login', body),
-  logout: () => apiPost<{ ok?: boolean }>('/auth/logout'),
+  logout: () => apiPost<Schema['OkResult']>('/auth/logout'),
   me: () => apiGet<Schema['SessionUser']>('/auth/me'),
   changePassword: (body: Schema['ChangePasswordRequest']) =>
     apiPost<Schema['ChangePasswordResult']>('/auth/change-password', body),

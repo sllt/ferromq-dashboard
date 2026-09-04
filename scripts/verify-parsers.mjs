@@ -78,7 +78,7 @@ const viewer = parseSessionUser({ username: 'ops', role: 'viewer', auth: 'sessio
 assert('viewer cannot write', viewer?.role === 'viewer' && canWrite(viewer) === false)
 assert('reject missing role', parseSessionUser({ username: 'x', auth: 'session' }) === null)
 assert('reject password leak shape', parseSessionUser({ username: 'a', role: 'admin', auth: 'session', password: 'secret' })?.username === 'a')
-assert('anonymous admin can write', canWrite({ username: 'anonymous', role: 'admin', auth: 'anonymous' }))
+assert('anonymous viewer is read-only', !canWrite({ username: 'anonymous', role: 'viewer', auth: 'anonymous' }))
 const ops = parseSessionUser({ username: 'ops', role: 'operator', auth: 'session' })
 assert('operator can write but not admin', ops?.role === 'operator' && canWrite(ops) === true && canAdmin(ops) === false)
 assert('admin can admin', canAdmin({ username: 'admin', role: 'admin', auth: 'session' }) === true)

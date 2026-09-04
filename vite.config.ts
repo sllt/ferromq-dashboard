@@ -26,7 +26,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
-      host: '0.0.0.0',
+      host: '127.0.0.1',
       port: 5173,
       proxy: {
         '/api/v1': {
@@ -39,7 +39,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     preview: {
-      host: '0.0.0.0',
+      host: '127.0.0.1',
       port: 4173,
       proxy: {
         '/api/v1': {

@@ -66,7 +66,7 @@ export interface paths {
         put?: never;
         /**
          * Dashboard login
-         * @description Verifies username/password (bcrypt). If no users exist yet and the credentials match `dashboard_admin_*` (or viewer) config, the first login bootstraps that user. Sets `ferromq_session` (HttpOnly, SameSite=Lax, Secure when `dashboard_cookie_secure`). In-memory sessions are not shared across cluster nodes.
+         * @description Verifies username/password (bcrypt). If no users exist yet and the credentials match `dashboard_admin_*` (or viewer) config, the first login bootstraps that user. Sets `ferromq_session` (HttpOnly, SameSite=Lax, Secure when `dashboard_cookie_secure`). User/API-key hashes are persisted per node; sessions remain process-local.
          */
         post: operations["authLogin"];
         delete?: never;
@@ -101,7 +101,7 @@ export interface paths {
         };
         /**
          * Current user
-         * @description Session cookie, bearer operator, or anonymous admin when auth is not configured.
+         * @description Session cookie, bearer/API key, or anonymous viewer when auth is not configured. Anonymous admin requires dashboard_allow_anonymous_admin=true.
          */
         get: operations["authMe"];
         put?: never;
@@ -2156,7 +2156,10 @@ export interface components {
             items: unknown[];
             offset?: number;
             limit?: number;
+            total?: number;
             truncated?: boolean;
+            /** @description Raw routes hit max_row_limit before grouping */
+            source_truncated?: boolean;
         };
         ClusterTopology: {
             available: boolean;
@@ -2260,17 +2263,6 @@ export interface components {
             /** Format: password */
             new_password: string;
         };
-        ChangePasswordResult: {
-            ok: boolean;
-            /** @description True when the broker revoked old sessions and set a new ferromq_session cookie */
-            session_rotated?: boolean;
-        };
-        InitAdminResult: {
-            username: string;
-            /** @enum {string} */
-            role: "admin" | "operator" | "viewer";
-            created: boolean;
-        };
         SessionUser: {
             username: string;
             /** @enum {string} */
@@ -2284,6 +2276,25 @@ export interface components {
             /** @description Present on POST /auth/init */
             created?: boolean;
             ok?: boolean;
+        };
+        ChangePasswordResult: {
+            ok: boolean;
+            session_rotated?: boolean;
+            username?: string;
+            /** @enum {string} */
+            role?: "admin" | "operator" | "viewer";
+            /** @enum {string} */
+            auth?: "session";
+            expires_in?: number;
+        };
+        InitAdminResult: {
+            username: string;
+            /** @enum {string} */
+            role: "admin" | "operator" | "viewer";
+            created: boolean;
+        };
+        OkResult: {
+            ok: boolean;
         };
         DashboardUser: {
             username: string;
@@ -2614,7 +2625,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SessionUser"];
+                    "application/json": components["schemas"]["OkResult"];
                 };
             };
         };

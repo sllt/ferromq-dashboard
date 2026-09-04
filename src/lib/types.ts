@@ -681,7 +681,9 @@ export type TopicMetrics = {
   items: TopicMetricItem[]
   offset?: number
   limit?: number
+  total?: number
   truncated?: boolean
+  source_truncated?: boolean
 }
 
 export type ClusterMode = 'standalone' | 'raft' | 'broadcast'
