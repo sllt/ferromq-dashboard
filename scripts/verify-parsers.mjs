@@ -169,7 +169,9 @@ const topicMetrics = parseTopicMetrics({
   items: [{ topic: 'a/b', subscribers: 3, node_ids: [1] }, { bad: true }],
   offset: 0,
   limit: 50,
+  total: 1,
   truncated: false,
+  source_truncated: false,
 })
 assert(
   'topic metrics route_derived',
@@ -177,6 +179,8 @@ assert(
     topicMetrics.kind === 'route_derived' &&
     topicMetrics.items.length === 1 &&
     topicMetrics.items[0].subscribers === 3 &&
+    topicMetrics.total === 1 &&
+    topicMetrics.source_truncated === false &&
     topicMetrics.sys_topic?.active === false,
 )
 

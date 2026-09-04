@@ -79,8 +79,8 @@ export function parseAlarmList(value: unknown): AlarmList | null {
     items,
     offset: asNumber(rec.offset),
     limit: asNumber(rec.limit),
-    truncated: asBool(rec.truncated),
     total: asNumber(rec.total),
+    truncated: asBool(rec.truncated),
   }
 }
 
@@ -148,7 +148,9 @@ export function parseTopicMetrics(value: unknown): TopicMetrics | null {
     items: rawItems.map(parseTopicMetricItem).filter((i): i is TopicMetricItem => i != null),
     offset: asNumber(rec.offset),
     limit: asNumber(rec.limit),
+    total: asNumber(rec.total),
     truncated: asBool(rec.truncated),
+    source_truncated: asBool(rec.source_truncated),
   }
 }
 

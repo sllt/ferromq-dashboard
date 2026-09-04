@@ -54,6 +54,7 @@ export function TopicMetricsPage() {
         items: parsed.items,
         rowCount: parsed.items.length,
         truncated: parsed.truncated === true,
+        total: parsed.total,
         offset: parsed.offset ?? offset,
         limit: parsed.limit ?? limit,
         format: 'page',
